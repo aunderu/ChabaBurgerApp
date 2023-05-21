@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'screens/home_page.dart';
+import 'screens/screen_page.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,7 +21,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       title: 'Chaba Burger Application',
-      home: HomePage(),
+      debugShowCheckedModeBanner: false,
+      home: ScreenPage(),
     );
   }
 }
