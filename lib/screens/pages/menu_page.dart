@@ -47,9 +47,10 @@ class _MenuPageState extends State<MenuPage> {
                       child: Container(
                         decoration: BoxDecoration(
                           image: const DecorationImage(
-                            image: NetworkImage(
-                              "https://scontent.fbkk5-4.fna.fbcdn.net/v/t39.30808-6/347795186_769637034690078_7656852021213171053_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=730e14&_nc_ohc=pqc3FG1JkmwAX-T5bN0&_nc_ht=scontent.fbkk5-4.fna&oh=00_AfAjKIe9PTxQR4d5a-7emswRW2FdA8ymFmoUdTzxdOlPeA&oe=646EB3C9",
-                            ),
+                            // image: NetworkImage(
+                            //   "https://scontent.fbkk5-4.fna.fbcdn.net/v/t39.30808-6/347795186_769637034690078_7656852021213171053_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=730e14&_nc_ohc=pqc3FG1JkmwAX-T5bN0&_nc_ht=scontent.fbkk5-4.fna&oh=00_AfAjKIe9PTxQR4d5a-7emswRW2FdA8ymFmoUdTzxdOlPeA&oe=646EB3C9",
+                            // ),
+                            image: AssetImage("assets/images/mockup-burger-img.jpg"),
                             fit: BoxFit.fill,
                           ),
                           color: mainColor,

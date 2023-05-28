@@ -16,6 +16,10 @@ dependencies:
   flutter_native_splash: ^2.2.19
   get: ^4.6.5
   dotted_border: ^2.0.0+3
+  firebase_core: ^2.13.0
+  firebase_auth: ^4.6.1
+  cloud_firestore: ^4.7.1
+  shared_preferences: ^2.0.15
 
 dev_dependencies:
   flutter_test:
