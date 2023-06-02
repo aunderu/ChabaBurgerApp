@@ -2,7 +2,10 @@ import 'dart:ui';
 
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
+import '../../models/menu_model.dart';
+import '../../models/menu_repository.dart';
 import '../../utils/color.dart';
 
 class AddMenuPage extends StatefulWidget {
@@ -22,6 +25,8 @@ class _AddMenuPageState extends State<AddMenuPage> {
     "อื่น ๆ",
   ];
 
+  final menuController = Get.put(MemuRepository());
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -40,121 +45,133 @@ class _AddMenuPageState extends State<AddMenuPage> {
           ),
           Expanded(
             flex: 8,
-            child: GridView.builder(
-              itemCount: 10,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                crossAxisSpacing: 30,
-                mainAxisSpacing: 30,
-              ),
-              physics: const BouncingScrollPhysics(),
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  return GestureDetector(
-                    onTap: () {},
-                    child: DottedBorder(
-                      color: darkMainColor,
-                      strokeWidth: 1,
-                      borderType: BorderType.RRect,
-                      radius: const Radius.circular(35),
-                      strokeCap: StrokeCap.round,
-                      dashPattern: const [10, 10],
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: mainColor,
-                          borderRadius: BorderRadius.circular(35),
-                        ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.add,
-                            color: darkMainColor,
-                          ),
-                        ),
+            child: FutureBuilder<List<MenuModel>>(
+              future: menuController.getAllMenu(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  if (snapshot.hasData) {
+                    var menuData = snapshot.data;
+                    return GridView.builder(
+                      itemCount: menuData!.length + 1,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 4,
+                        crossAxisSpacing: 30,
+                        mainAxisSpacing: 30,
                       ),
-                    ),
+                      physics: const BouncingScrollPhysics(),
+                      itemBuilder: (context, index) {
+                        if (index == 0) {
+                          return GestureDetector(
+                            onTap: () {},
+                            child: DottedBorder(
+                              color: darkMainColor,
+                              strokeWidth: 1,
+                              borderType: BorderType.RRect,
+                              radius: const Radius.circular(35),
+                              strokeCap: StrokeCap.round,
+                              dashPattern: const [10, 10],
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: mainColor,
+                                  borderRadius: BorderRadius.circular(35),
+                                ),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.add,
+                                    color: darkMainColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                        return GestureDetector(
+                          onTap: () {},
+                          child: Container(
+                            decoration: BoxDecoration(
+                              image: DecorationImage(
+                                image: NetworkImage(
+                                  menuData[index - 1].img,
+                                ),
+                                fit: BoxFit.fill,
+                              ),
+                              color: mainColor,
+                              borderRadius: BorderRadius.circular(35),
+                            ),
+                            child: Align(
+                              alignment: const AlignmentDirectional(0, 1),
+                              child: ClipRRect(
+                                child: BackdropFilter(
+                                  filter:
+                                      ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+                                  child: Container(
+                                    width: double.infinity,
+                                    height: MediaQuery.of(context).size.height *
+                                        0.1,
+                                    decoration: const BoxDecoration(
+                                      borderRadius: BorderRadius.only(
+                                        bottomLeft: Radius.circular(35),
+                                        bottomRight: Radius.circular(35),
+                                      ),
+                                      color: Color.fromARGB(154, 40, 26, 1),
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        // ชื่อเมนู
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 5),
+                                          child: Text(
+                                            menuData[index - 1].name,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 25,
+                                              color: mainColor,
+                                            ),
+                                          ),
+                                        ),
+                                        // หมวดหมู่ของเมนู
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(bottom: 5),
+                                          child: Text(
+                                            menuData[index - 1].category,
+                                            style: const TextStyle(
+                                              color: mainColor,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      padding: const EdgeInsets.all(20),
+                    );
+                  } else if (snapshot.hasError) {
+                    return Center(
+                      child: Text(snapshot.error.toString()),
+                    );
+                  } else {
+                    return const Center(
+                      child: Text('ดูเหมือนมีบางอย่างผิดปกติ..'),
+                    );
+                  }
+                } else {
+                  return const Center(
+                    child: CircularProgressIndicator(),
                   );
                 }
-                return GestureDetector(
-                  onTap: () {},
-                  child: Container(
-                    decoration: BoxDecoration(
-                      image: const DecorationImage(
-                        // image: NetworkImage(
-                        //   "https://scontent.fbkk5-4.fna.fbcdn.net/v/t39.30808-6/347795186_769637034690078_7656852021213171053_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=730e14&_nc_ohc=pqc3FG1JkmwAX-T5bN0&_nc_ht=scontent.fbkk5-4.fna&oh=00_AfAjKIe9PTxQR4d5a-7emswRW2FdA8ymFmoUdTzxdOlPeA&oe=646EB3C9",
-                        // ),
-                        image:
-                            AssetImage("assets/images/mockup-burger-img.jpg"),
-                        fit: BoxFit.fill,
-                      ),
-                      color: mainColor,
-                      borderRadius: BorderRadius.circular(35),
-                    ),
-                    child: Align(
-                      alignment: const AlignmentDirectional(0, 1),
-                      child: ClipRRect(
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
-                          child: Container(
-                            width: double.infinity,
-                            height: MediaQuery.of(context).size.height * 0.1,
-                            decoration: const BoxDecoration(
-                              borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(35),
-                                bottomRight: Radius.circular(35),
-                              ),
-                              color: Color.fromARGB(154, 40, 26, 1),
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: const [
-                                // รูปภาพของเมนู
-                                // Expanded(
-                                //   child: ClipRRect(
-                                //     borderRadius: const BorderRadius.only(
-                                //       topLeft: Radius.circular(35),
-                                //       topRight: Radius.circular(35),
-                                //     ),
-                                //     child: Image.network(
-                                //       "https://scontent.fbkk5-4.fna.fbcdn.net/v/t39.30808-6/347795186_769637034690078_7656852021213171053_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=730e14&_nc_ohc=pqc3FG1JkmwAX-T5bN0&_nc_ht=scontent.fbkk5-4.fna&oh=00_AfAjKIe9PTxQR4d5a-7emswRW2FdA8ymFmoUdTzxdOlPeA&oe=646EB3C9",
-                                //       fit: BoxFit.fill,
-                                //       height: 170,
-                                //       width: double.infinity,
-                                //     ),
-                                //   ),
-                                // ),
-                                // ชื่อเมนู
-                                Padding(
-                                  padding: EdgeInsets.only(top: 5),
-                                  child: Text(
-                                    "ชบาเบอร์เกอร์",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 25,
-                                      color: mainColor,
-                                    ),
-                                  ),
-                                ),
-                                // หมวดหมู่ของเมนู
-                                Padding(
-                                  padding: EdgeInsets.only(bottom: 5),
-                                  child: Text(
-                                    "เบอร์เกอร์",
-                                    style: TextStyle(
-                                      color: mainColor,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                );
               },
-              padding: const EdgeInsets.all(20),
             ),
           ),
           Expanded(

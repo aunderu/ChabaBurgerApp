@@ -20,14 +20,6 @@ class MenuPage extends StatefulWidget {
 }
 
 class _MenuPageState extends State<MenuPage> {
-  List<String> items = [
-    "ทั้งหมด",
-    "เบอร์เกอร์",
-    "ของทานเล่น",
-    "เครื่องดื่ม",
-    "เซ็ตอาหาร",
-    "อื่น ๆ",
-  ];
 
   // CollectionReference menuCollection =
   //     FirebaseFirestore.instance.collection('menus');

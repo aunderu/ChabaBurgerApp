@@ -1,5 +1,10 @@
 import 'package:chaba_burger_app/utils/color.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../../models/category_model.dart';
+import '../../models/category_repository.dart';
 
 class AddCategoryPage extends StatefulWidget {
   const AddCategoryPage({super.key});
@@ -9,7 +14,8 @@ class AddCategoryPage extends StatefulWidget {
 }
 
 class _AddCategoryPageState extends State<AddCategoryPage> {
-  final DataTableSource _data = MyData();
+  // final DataTableSource _data = CategoryData();
+  final categoryController = Get.put(CategoryRepository());
 
   @override
   Widget build(BuildContext context) {
@@ -43,14 +49,40 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
           Expanded(
             child: SizedBox(
               width: double.infinity,
-              child: PaginatedDataTable(
-                showFirstLastButtons: true,
-                columnSpacing: MediaQuery.of(context).size.width * 0.65,
-                columns: const [
-                  DataColumn(label: Text("รายการ")),
-                  DataColumn(label: Text("ตัวเลือก")),
-                ],
-                source: _data,
+              child: FutureBuilder<List<CategoryModel>>(
+                future: categoryController.getAllCategory(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    if (snapshot.hasData) {
+                      var categoryData = snapshot.data;
+                      final DataTableSource allUsers =
+                          CategoryData(categoryData as List<CategoryModel>);
+                      return PaginatedDataTable(
+                        showFirstLastButtons: true,
+                        columnSpacing: MediaQuery.of(context).size.width * 0.65,
+                        columns: const [
+                          DataColumn(label: Text("รายการ")),
+                          DataColumn(label: Text("ตัวเลือก")),
+                        ],
+                        source: allUsers,
+                      );
+                    } else if (snapshot.hasError) {
+                      return Center(
+                        child: Text(
+                          snapshot.error.toString(),
+                        ),
+                      );
+                    } else {
+                      return const Center(
+                        child: Text('มีบางอย่างผิดพลาด..'),
+                      );
+                    }
+                  } else {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                },
               ),
             ),
           ),
@@ -60,19 +92,16 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
   }
 }
 
-class MyData extends DataTableSource {
-  final List<Map<String, dynamic>> _data = List.generate(
-    200,
-    (index) => {
-      "category_name": "หมวดหมู่ $index",
-    },
-  );
+class CategoryData extends DataTableSource {
+  final List<CategoryModel> category;
+
+  CategoryData(this.category);
 
   @override
-  DataRow? getRow(int index) {
+  DataRow getRow(int index) {
     return DataRow(
       cells: [
-        DataCell(Text(_data[index]['category_name'])),
+        DataCell(Text(category[index].name)),
         DataCell(
           Row(
             children: [
@@ -98,10 +127,10 @@ class MyData extends DataTableSource {
   }
 
   @override
-  bool get isRowCountApproximate => true;
+  bool get isRowCountApproximate => false;
 
   @override
-  int get rowCount => _data.length;
+  int get rowCount => category.length;
 
   @override
   int get selectedRowCount => 0;
