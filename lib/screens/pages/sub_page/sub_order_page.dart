@@ -91,18 +91,18 @@ class _SubOrderPageState extends State<SubOrderPage> {
                   child: Padding(
                     padding: const EdgeInsets.all(30.0),
                     child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.red[100],
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      width: double.infinity,
-                      child: const Center(
-                        child: Text(
-                          "ยกเลิกออเดอร์",
-                          style: TextStyle(fontSize: 25),
+                        // decoration: BoxDecoration(
+                        //   color: Colors.red[100],
+                        //   borderRadius: BorderRadius.circular(25),
+                        // ),
+                        // width: double.infinity,
+                        // child: const Center(
+                        //   child: Text(
+                        //     "ยกเลิกออเดอร์",
+                        //     style: TextStyle(fontSize: 25),
+                        //   ),
+                        // ),
                         ),
-                      ),
-                    ),
                   ),
                 ),
               ],
@@ -339,7 +339,7 @@ class _SubOrderPageState extends State<SubOrderPage> {
                             width: double.infinity,
                             child: const Center(
                               child: Text(
-                                "ยกเลิกออเดอร์",
+                                "ชำระเงิน",
                                 style: TextStyle(fontSize: 25),
                               ),
                             ),
