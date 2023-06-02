@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+import 'package:chaba_burger_app/models/category_model.dart';
+import 'package:chaba_burger_app/models/category_repository.dart';
 import 'package:chaba_burger_app/models/menu_model.dart';
 import 'package:chaba_burger_app/utils/color.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -30,7 +32,8 @@ class _MenuPageState extends State<MenuPage> {
   // CollectionReference menuCollection =
   //     FirebaseFirestore.instance.collection('menus');
 
-  final controller = Get.put(MemuRepository());
+  final menuController = Get.put(MemuRepository());
+  final categoryController = Get.put(CategoryRepository());
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +48,7 @@ class _MenuPageState extends State<MenuPage> {
               Expanded(
                 flex: 8,
                 child: FutureBuilder<List<MenuModel>>(
-                  future: controller.getAllMenu(),
+                  future: menuController.getAllMenu(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.done) {
                       if (snapshot.hasData) {
@@ -64,12 +67,12 @@ class _MenuPageState extends State<MenuPage> {
                               onTap: () {},
                               child: Container(
                                 decoration: BoxDecoration(
-                                  image: const DecorationImage(
-                                    // image: NetworkImage(
-                                    //   "https://scontent.fbkk5-4.fna.fbcdn.net/v/t39.30808-6/347795186_769637034690078_7656852021213171053_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=730e14&_nc_ohc=pqc3FG1JkmwAX-T5bN0&_nc_ht=scontent.fbkk5-4.fna&oh=00_AfAjKIe9PTxQR4d5a-7emswRW2FdA8ymFmoUdTzxdOlPeA&oe=646EB3C9",
-                                    // ),
-                                    image: AssetImage(
-                                        "assets/images/mockup-burger-img.jpg"),
+                                  image: DecorationImage(
+                                    image: NetworkImage(
+                                      menuData[index].img,
+                                    ),
+                                    // image: AssetImage(
+                                    //     "assets/images/mockup-burger-img.jpg"),
                                     fit: BoxFit.fill,
                                   ),
                                   color: mainColor,
@@ -166,52 +169,79 @@ class _MenuPageState extends State<MenuPage> {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: items.length,
-                        physics: const BouncingScrollPhysics(),
-                        itemExtent: 150,
-                        scrollDirection: Axis.horizontal,
-                        itemBuilder: (context, index) {
-                          return Column(
-                            mainAxisSize: MainAxisSize.max,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  // setState(() {
-                                  //   widget.current = index;
-                                  // });
+                      child: FutureBuilder<List<CategoryModel>>(
+                        future: categoryController.getAllCategory(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.done) {
+                            if (snapshot.hasData) {
+                              var categoryData = snapshot.data;
+                              return ListView.builder(
+                                shrinkWrap: true,
+                                itemCount: categoryData!.length,
+                                physics: const BouncingScrollPhysics(),
+                                itemExtent: 150,
+                                scrollDirection: Axis.horizontal,
+                                itemBuilder: (context, index) {
+                                  return Column(
+                                    mainAxisSize: MainAxisSize.max,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          // setState(() {
+                                          //   widget.current = index;
+                                          // });
+                                        },
+                                        child: AnimatedContainer(
+                                          duration:
+                                              const Duration(milliseconds: 300),
+                                          margin: const EdgeInsets.all(5),
+                                          width: 200,
+                                          height: 70,
+                                          decoration: BoxDecoration(
+                                            // color: widget.current == index
+                                            //     ? mainGreen
+                                            //     : Colors.white,
+                                            color: index == 0
+                                                ? darkMainColor
+                                                : gray,
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                          ),
+                                          alignment:
+                                              const AlignmentDirectional(0, 0),
+                                          child: Text(
+                                            categoryData[index].name,
+                                            style: const TextStyle(
+                                              // color: widget.current == index
+                                              //     ? Colors.white
+                                              //     : Colors.black,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 20,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  );
                                 },
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 300),
-                                  margin: const EdgeInsets.all(5),
-                                  width: 200,
-                                  height: 70,
-                                  decoration: BoxDecoration(
-                                    // color: widget.current == index
-                                    //     ? mainGreen
-                                    //     : Colors.white,
-                                    color: index == 0 ? darkMainColor : gray,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  alignment: const AlignmentDirectional(0, 0),
-                                  child: Text(
-                                    items[index],
-                                    style: const TextStyle(
-                                      // color: widget.current == index
-                                      //     ? Colors.white
-                                      //     : Colors.black,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 20,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
+                              );
+                            } else if (snapshot.hasError) {
+                              return Center(
+                                child: Text(snapshot.error.toString()),
+                              );
+                            } else {
+                              return const Center(
+                                child: Text('ดูเหมือนมีบางอย่างผิดปกติ..'),
+                              );
+                            }
+                          } else {
+                            return const SizedBox.shrink();
+                          }
                         },
                       ),
                     ),
