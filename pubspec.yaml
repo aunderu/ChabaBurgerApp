@@ -15,6 +15,7 @@ dependencies:
   cupertino_icons: ^1.0.5
   flutter_native_splash: ^2.2.19
   get: ^4.6.5
+  intl: ^0.18.1
   dotted_border: ^2.0.0+3
   firebase_core: ^2.13.0
   firebase_auth: ^4.6.1

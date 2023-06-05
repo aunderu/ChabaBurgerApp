@@ -1,9 +1,7 @@
 import 'package:chaba_burger_app/auth/auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../screens/screen_page.dart';
-import '../utils/user_preferences.dart';
 import 'login_page.dart';
 
 class WidgetTree extends StatefulWidget {

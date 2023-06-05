@@ -2,11 +2,11 @@ import 'package:chaba_burger_app/auth/auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 import '../utils/color.dart';
 import 'pages/add_category_page.dart';
 import 'pages/add_menu_page.dart';
+import 'pages/member_page.dart';
 import 'pages/menu_page.dart';
 import 'pages/order_page.dart';
 import 'pages/report_page.dart';
@@ -34,6 +34,7 @@ class _ScreenPageState extends State<ScreenPage> {
     OrderPage(),
     AddMenuPage(),
     AddCategoryPage(),
+    MemberPage(),
     ReportPage(),
   ];
 
@@ -74,14 +75,14 @@ class _ScreenPageState extends State<ScreenPage> {
               //     ),
               //   ),
               // );
-              return ScreenPageWidget(scaffoldKey, userData);
+              return screenPageWidget(scaffoldKey, userData);
             }
-            return ScreenPageWidget(scaffoldKey, userData);
+            return screenPageWidget(scaffoldKey, userData);
           }),
     );
   }
 
-  Widget ScreenPageWidget(
+  Widget screenPageWidget(
     GlobalKey<ScaffoldState> scaffoldKey,
     AsyncSnapshot<DocumentSnapshot<Object?>> userData,
   ) {
@@ -243,6 +244,11 @@ class _ScreenPageState extends State<ScreenPage> {
                 icon: Icon(Icons.add_box_outlined),
                 selectedIcon: Icon(Icons.add_box_rounded),
                 label: Text("เพิ่มหมวดหมู่"),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.people_outline_rounded),
+                selectedIcon: Icon(Icons.people_rounded),
+                label: Text("เมมเบอร์"),
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.bar_chart_outlined),

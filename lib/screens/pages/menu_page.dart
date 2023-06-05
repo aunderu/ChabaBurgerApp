@@ -4,11 +4,11 @@ import 'package:chaba_burger_app/models/category_model.dart';
 import 'package:chaba_burger_app/models/category_repository.dart';
 import 'package:chaba_burger_app/models/menu_model.dart';
 import 'package:chaba_burger_app/utils/color.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/get_core.dart';
 import 'package:get/get_instance/get_instance.dart';
+import 'package:intl/intl.dart';
 
 import '../../models/menu_repository.dart';
 
@@ -20,7 +20,6 @@ class MenuPage extends StatefulWidget {
 }
 
 class _MenuPageState extends State<MenuPage> {
-
   // CollectionReference menuCollection =
   //     FirebaseFirestore.instance.collection('menus');
 
@@ -288,7 +287,7 @@ class _MenuPageState extends State<MenuPage> {
                             child: Padding(
                               padding: const EdgeInsets.all(15.0),
                               child: ListView.builder(
-                                itemCount: 5,
+                                itemCount: 0,
                                 physics: const BouncingScrollPhysics(),
                                 // itemExtent: 85,
                                 itemBuilder: (context, index) {
@@ -396,8 +395,8 @@ class _MenuPageState extends State<MenuPage> {
                                         CrossAxisAlignment.center,
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceAround,
-                                    children: const [
-                                      Text(
+                                    children: [
+                                      const Text(
                                         'รวมทั้งหมด',
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
@@ -405,8 +404,8 @@ class _MenuPageState extends State<MenuPage> {
                                         ),
                                       ),
                                       Text(
-                                        '1000 บาท',
-                                        style: TextStyle(
+                                        '${NumberFormat.decimalPattern().format(0)} บาท',
+                                        style: const TextStyle(
                                           fontSize: 20,
                                         ),
                                       ),

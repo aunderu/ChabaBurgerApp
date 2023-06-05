@@ -16,6 +16,7 @@ class AddMenuPage extends StatefulWidget {
 }
 
 class _AddMenuPageState extends State<AddMenuPage> {
+  final _formKey = GlobalKey<FormState>();
   List<String> items = [
     "ทั้งหมด",
     "เบอร์เกอร์",
@@ -24,6 +25,8 @@ class _AddMenuPageState extends State<AddMenuPage> {
     "เซ็ตอาหาร",
     "อื่น ๆ",
   ];
+
+  String? selectedItem;
 
   final menuController = Get.put(MemuRepository());
 
@@ -63,7 +66,155 @@ class _AddMenuPageState extends State<AddMenuPage> {
                       itemBuilder: (context, index) {
                         if (index == 0) {
                           return GestureDetector(
-                            onTap: () {},
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return GestureDetector(
+                                    onTap: () =>
+                                        FocusScope.of(context).unfocus(),
+                                    child: StatefulBuilder(
+                                      builder: (context, setState) {
+                                        return AlertDialog(
+                                          scrollable: true,
+                                          title: const Text('เพิ่มรายการอาหาร'),
+                                          elevation: 30,
+                                          content: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: SizedBox(
+                                              width: MediaQuery.of(context)
+                                                      .size
+                                                      .width *
+                                                  0.5,
+                                              height: MediaQuery.of(context)
+                                                      .size
+                                                      .height *
+                                                  0.5,
+                                              child: Form(
+                                                child: Column(
+                                                  children: <Widget>[
+                                                    Container(
+                                                      padding: const EdgeInsets
+                                                              .symmetric(
+                                                          horizontal: 10,
+                                                          vertical: 5),
+                                                      decoration: BoxDecoration(
+                                                          color:
+                                                              Colors.grey[100],
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      10)),
+                                                      child: DropdownButton<
+                                                          String>(
+                                                        icon: const Icon(Icons
+                                                            .arrow_drop_down),
+                                                        iconSize: 42,
+                                                        underline:
+                                                            const SizedBox(),
+                                                        hint: const Text(
+                                                            'เลือกหมวดหมู่'),
+                                                        value: selectedItem,
+                                                        isExpanded: true,
+                                                        items: items
+                                                            .map((item) =>
+                                                                DropdownMenuItem<
+                                                                    String>(
+                                                                  value: item,
+                                                                  child: Text(
+                                                                      item),
+                                                                ))
+                                                            .toList(),
+                                                        onChanged: (item) {
+                                                          setState(() {
+                                                            selectedItem = item;
+                                                          });
+                                                        },
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 30),
+                                                    TextFormField(
+                                                      decoration:
+                                                          const InputDecoration(
+                                                        labelText: 'ชิ่อรายการ',
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 10),
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        SizedBox(
+                                                          width: MediaQuery.of(
+                                                                      context)
+                                                                  .size
+                                                                  .width *
+                                                              0.2,
+                                                          child: TextFormField(
+                                                            decoration:
+                                                                const InputDecoration(
+                                                              labelText:
+                                                                  'ราคาตั้ง',
+                                                              suffix:
+                                                                  Text('บาท'),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        SizedBox(
+                                                          width: MediaQuery.of(
+                                                                      context)
+                                                                  .size
+                                                                  .width *
+                                                              0.2,
+                                                          child: TextFormField(
+                                                            decoration:
+                                                                const InputDecoration(
+                                                              labelText:
+                                                                  'ราคาขาย',
+                                                              suffix:
+                                                                  Text('บาท'),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const SizedBox(height: 10),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              child: const Text("ยกเลิก"),
+                                              onPressed: () =>
+                                                  Navigator.pop(context),
+                                            ),
+                                            const SizedBox(width: 20),
+                                            ElevatedButton.icon(
+                                              onPressed: () {},
+                                              style: ButtonStyle(
+                                                backgroundColor:
+                                                    MaterialStateProperty.all(
+                                                        Colors.green),
+                                              ),
+                                              icon: const Icon(
+                                                Icons.add_box_rounded,
+                                                color: Colors.white,
+                                              ),
+                                              label: const Text(
+                                                'เพิ่มรายการ',
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    ),
+                                  );
+                                },
+                              );
+                            },
                             child: DottedBorder(
                               color: darkMainColor,
                               strokeWidth: 1,
@@ -107,8 +258,7 @@ class _AddMenuPageState extends State<AddMenuPage> {
                                       ImageFilter.blur(sigmaX: 3, sigmaY: 3),
                                   child: Container(
                                     width: double.infinity,
-                                    height: MediaQuery.of(context).size.height *
-                                        0.1,
+                                    height: 100,
                                     decoration: const BoxDecoration(
                                       borderRadius: BorderRadius.only(
                                         bottomLeft: Radius.circular(35),
@@ -124,8 +274,8 @@ class _AddMenuPageState extends State<AddMenuPage> {
                                       children: [
                                         // ชื่อเมนู
                                         Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 5),
+                                          padding: const EdgeInsets.only(
+                                              top: 5, left: 10, right: 10),
                                           child: Text(
                                             menuData[index - 1].name,
                                             style: const TextStyle(
@@ -133,6 +283,7 @@ class _AddMenuPageState extends State<AddMenuPage> {
                                               fontSize: 25,
                                               color: mainColor,
                                             ),
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
                                         // หมวดหมู่ของเมนู
@@ -141,6 +292,17 @@ class _AddMenuPageState extends State<AddMenuPage> {
                                               const EdgeInsets.only(bottom: 5),
                                           child: Text(
                                             menuData[index - 1].category,
+                                            style: const TextStyle(
+                                              color: mainColor,
+                                            ),
+                                          ),
+                                        ),
+                                        // ราคา
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(bottom: 5),
+                                          child: Text(
+                                            "${menuData[index - 1].salePrice} บาท",
                                             style: const TextStyle(
                                               color: mainColor,
                                             ),
