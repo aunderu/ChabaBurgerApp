@@ -1,10 +1,14 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:chaba_burger_app/models/order_model.dart';
+import 'package:chaba_burger_app/models/remote_service.dart';
 import 'package:chaba_burger_app/utils/color.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
 
-import '../../models/order_repository.dart';
 import 'sub_page/sub_order_page.dart';
 
 class OrderPage extends StatefulWidget {
@@ -15,96 +19,170 @@ class OrderPage extends StatefulWidget {
 }
 
 class _OrderPageState extends State<OrderPage> {
-  final orderController = Get.put(OrderRepository());
+  StreamController<OrderModel> _streamController = StreamController();
 
-  List<OrderModel> filteredItems = [];
+  @override
+  void dispose() {
+    _streamController.close();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    Timer.periodic(const Duration(seconds: 3), (timer) {
+      _getOrderModel();
+    });
+  }
+
+  Future<void> _getOrderModel() async {
+    var url = Uri.parse("https://chaba-pos.com/api/order/show");
+
+    final response = await http.get(url);
+    final databody = json.decode(response.body);
+
+    OrderModel orderModel = OrderModel.fromJson(databody);
+
+    if (!_streamController.isClosed) {
+      _streamController.sink.add(orderModel);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(15.0),
-      child: FutureBuilder<List<OrderModel>>(
-        future: orderController.getAllOrder(),
+      child: StreamBuilder(
+        stream: _streamController.stream,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            if (snapshot.hasData) {
-              var orderData = snapshot.data;
-              return DefaultTabController(
-                length: 4,
-                initialIndex: 0,
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: TabBarView(
-                        children: [
-                          OrderWidget(orderData: orderData, filter: "paid"),
-                          OrderWidget(orderData: orderData, filter: "waiting"),
-                          OrderWidget(orderData: orderData, filter: "done"),
-                          OrderWidget(orderData: orderData, filter: "all"),
+          // if (snapshot.connectionState == ConnectionState.done) {
+          //   if (snapshot.hasData) {
+          //     var orderData = snapshot.data!.data;
+          //     // print(orderData[2].orderItems);
+          //     return DefaultTabController(
+          //       length: 4,
+          //       initialIndex: 0,
+          //       child: Column(
+          //         children: [
+          //           Expanded(
+          //             child: TabBarView(
+          //               children: [
+          //                 orderWidget(context, orderData, "paid"),
+          //                 orderWidget(context, orderData, "waiting"),
+          //                 orderWidget(context, orderData, "done"),
+          //                 orderWidget(context, orderData, "all"),
+          //               ],
+          //             ),
+          //           ),
+          //           const TabBar(
+          //             isScrollable: true,
+          //             labelColor: Colors.black,
+          //             unselectedLabelColor: lightMainColor,
+          //             indicatorColor: darkMainColor,
+          //             indicatorWeight: 5,
+          //             physics: BouncingScrollPhysics(),
+          //             labelStyle: TextStyle(
+          //               fontSize: 25,
+          //               fontWeight: FontWeight.bold,
+          //             ),
+          //             tabs: [
+          //               Tab(
+          //                 text: 'จ่ายแล้ว',
+          //               ),
+          //               Tab(
+          //                 text: 'รอชำระ',
+          //               ),
+          //               Tab(
+          //                 text: 'เสร็จสิ้น',
+          //               ),
+          //               Tab(
+          //                 text: 'ทั้งหมด',
+          //               ),
+          //             ],
+          //           ),
+          //         ],
+          //       ),
+          //     );
+          //   } else if (snapshot.hasError) {
+          //     return Center(
+          //       child: Text(snapshot.error.toString()),
+          //     );
+          //   } else {
+          //     return const Center(
+          //       child: Text('ดูเหมือนมีบางอย่างผิดปกติ..'),
+          //     );
+          //   }
+          // } else {
+          //   return const Center(
+          //     child: CircularProgressIndicator(),
+          //   );
+          // }
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              return const Center(child: CircularProgressIndicator());
+            default:
+              if (snapshot.hasError) {
+                return Text('กรุณารอสักครู่..');
+              } else {
+                var orderData = snapshot.data!.data;
+                // print(orderData[2].orderItems);
+                return DefaultTabController(
+                  length: 4,
+                  initialIndex: 0,
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: TabBarView(
+                          children: [
+                            orderWidget(context, orderData, "paid"),
+                            orderWidget(context, orderData, "waiting"),
+                            orderWidget(context, orderData, "done"),
+                            orderWidget(context, orderData, "all"),
+                          ],
+                        ),
+                      ),
+                      const TabBar(
+                        isScrollable: true,
+                        labelColor: Colors.black,
+                        unselectedLabelColor: lightMainColor,
+                        indicatorColor: darkMainColor,
+                        indicatorWeight: 5,
+                        physics: BouncingScrollPhysics(),
+                        labelStyle: TextStyle(
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        tabs: [
+                          Tab(
+                            text: 'จ่ายแล้ว',
+                          ),
+                          Tab(
+                            text: 'รอชำระ',
+                          ),
+                          Tab(
+                            text: 'เสร็จสิ้น',
+                          ),
+                          Tab(
+                            text: 'ทั้งหมด',
+                          ),
                         ],
                       ),
-                    ),
-                    const TabBar(
-                      isScrollable: true,
-                      labelColor: Colors.black,
-                      unselectedLabelColor: lightMainColor,
-                      indicatorColor: darkMainColor,
-                      indicatorWeight: 5,
-                      physics: BouncingScrollPhysics(),
-                      labelStyle: TextStyle(
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      tabs: [
-                        Tab(
-                          text: 'จ่ายแล้ว',
-                        ),
-                        Tab(
-                          text: 'รอชำระ',
-                        ),
-                        Tab(
-                          text: 'เสร็จสิ้น',
-                        ),
-                        Tab(
-                          text: 'ทั้งหมด',
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            } else if (snapshot.hasError) {
-              return Center(
-                child: Text(snapshot.error.toString()),
-              );
-            } else {
-              return const Center(
-                child: Text('ดูเหมือนมีบางอย่างผิดปกติ..'),
-              );
-            }
-          } else {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+                    ],
+                  ),
+                );
+              }
           }
         },
       ),
     );
   }
-}
 
-class OrderWidget extends StatelessWidget {
-  const OrderWidget({
-    super.key,
-    required this.orderData,
-    required this.filter,
-  });
-
-  final List<OrderModel>? orderData;
-  final String filter;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget orderWidget(
+    BuildContext context,
+    List<Datum> orderData,
+    String filter,
+  ) {
     return Column(
       children: [
         Align(
@@ -112,13 +190,13 @@ class OrderWidget extends StatelessWidget {
           child: Text(
             (() {
               if (filter == "paid") {
-                return "PAID ORDER (${orderData!.where((element) => element.status == "paid").length})";
+                return "PAID ORDER (${orderData.where((element) => element.status == "paid").length})";
               } else if (filter == "waiting") {
-                return "WAITING ORDER (${orderData!.where((element) => element.status == "waiting").length})";
+                return "WAITING ORDER (${orderData.where((element) => element.status == "waiting").length})";
               } else if (filter == "done") {
-                return "DONE ORDER (${orderData!.where((element) => element.status == "done").length})";
+                return "DONE ORDER (${orderData.where((element) => element.status == "done").length})";
               } else {
-                return "All ORDER (${orderData!.length})";
+                return "All ORDER (${orderData.length})";
               }
             }()),
             // "ALL ORDER (${orderData!.length})",
@@ -131,33 +209,44 @@ class OrderWidget extends StatelessWidget {
         const SizedBox(height: 15),
         Expanded(
           child: ListView.builder(
-            itemCount: orderData!.length,
+            itemCount: orderData.length,
             physics: const BouncingScrollPhysics(),
             itemBuilder: (context, index) {
+              int reverseIndex = orderData.length - 1 - index;
               switch (filter) {
                 case "paid":
-                  return orderData![index].status == "paid"
+                  return orderData[reverseIndex].status == "paid"
                       ? Card(
                           color: (() {
-                            if (orderData![index].status == "paid") {
+                            if (orderData[reverseIndex].status == "paid") {
                               return mainColor;
-                            } else if (orderData![index].status == "done") {
+                            } else if (orderData[reverseIndex].status ==
+                                "done") {
                               return Colors.green[100];
-                            } else if (orderData![index].status == "waiting") {
+                            } else if (orderData[reverseIndex].status ==
+                                "waiting") {
                               return lightGrey;
                             }
                           }()),
                           child: ListTile(
                             minVerticalPadding: 20,
-                            
                             onTap: () {
                               Get.to(
                                 () => const SubOrderPage(),
                                 transition: Transition.cupertino,
                               );
                             },
+                            onLongPress: () {
+                              // print('long press!!');
+                            },
+                            leading: const SizedBox(
+                              height: double.infinity,
+                              child: Icon(
+                                Icons.circle_outlined,
+                              ),
+                            ),
                             title: Text(
-                              "ORDER #${orderData![index].orderQueue}",
+                              "ORDER #${orderData[reverseIndex].orderQueue}",
                               style: const TextStyle(
                                 color: darkMainColor,
                                 fontWeight: FontWeight.bold,
@@ -165,7 +254,9 @@ class OrderWidget extends StatelessWidget {
                               ),
                             ),
                             subtitle: Text(
-                              orderData![index].orderItem.join(", "),
+                              // orderData[index].orderItems.join(", "),
+                              orderData[reverseIndex].orderItems,
+                              // jsonDecode(orderData[index].orderItems),
                               style: const TextStyle(
                                 color: lightMainColor,
                                 fontWeight: FontWeight.bold,
@@ -179,7 +270,7 @@ class OrderWidget extends StatelessWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    "รวมทั้งหมด ${NumberFormat.decimalPattern().format(orderData![index].totalPrice)} บาท",
+                                    "รวมทั้งหมด ${orderData[reverseIndex].totalPrice} บาท",
                                     style: const TextStyle(
                                       fontSize: 20,
                                       color: darkMainColor,
@@ -198,14 +289,16 @@ class OrderWidget extends StatelessWidget {
                         )
                       : const SizedBox.shrink();
                 case "waiting":
-                  return orderData![index].status == "waiting"
+                  return orderData[reverseIndex].status == "waiting"
                       ? Card(
                           color: (() {
-                            if (orderData![index].status == "paid") {
+                            if (orderData[reverseIndex].status == "paid") {
                               return mainColor;
-                            } else if (orderData![index].status == "done") {
+                            } else if (orderData[reverseIndex].status ==
+                                "done") {
                               return Colors.green[100];
-                            } else if (orderData![index].status == "waiting") {
+                            } else if (orderData[reverseIndex].status ==
+                                "waiting") {
                               return lightGrey;
                             }
                           }()),
@@ -217,8 +310,11 @@ class OrderWidget extends StatelessWidget {
                                 transition: Transition.cupertino,
                               );
                             },
+                            onLongPress: () {
+                              // print('long press!!');
+                            },
                             title: Text(
-                              "ORDER #${orderData![index].orderQueue}",
+                              "ORDER #${orderData[reverseIndex].orderQueue}",
                               style: const TextStyle(
                                 color: darkMainColor,
                                 fontWeight: FontWeight.bold,
@@ -226,7 +322,9 @@ class OrderWidget extends StatelessWidget {
                               ),
                             ),
                             subtitle: Text(
-                              orderData![index].orderItem.join(", "),
+                              // orderData[reverseIndex].orderItem.join(", "),
+                              orderData[reverseIndex].orderItems,
+                              // jsonEncode(orderData[reverseIndex].orderItems),
                               style: const TextStyle(
                                 color: lightMainColor,
                                 fontWeight: FontWeight.bold,
@@ -240,7 +338,7 @@ class OrderWidget extends StatelessWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    "รวมทั้งหมด ${NumberFormat.decimalPattern().format(orderData![index].totalPrice)} บาท",
+                                    "รวมทั้งหมด ${orderData[reverseIndex].totalPrice} บาท",
                                     style: const TextStyle(
                                       fontSize: 20,
                                       color: darkMainColor,
@@ -259,14 +357,16 @@ class OrderWidget extends StatelessWidget {
                         )
                       : const SizedBox.shrink();
                 case "done":
-                  return orderData![index].status == "done"
+                  return orderData[reverseIndex].status == "done"
                       ? Card(
                           color: (() {
-                            if (orderData![index].status == "paid") {
+                            if (orderData[reverseIndex].status == "paid") {
                               return mainColor;
-                            } else if (orderData![index].status == "done") {
+                            } else if (orderData[reverseIndex].status ==
+                                "done") {
                               return Colors.green[100];
-                            } else if (orderData![index].status == "waiting") {
+                            } else if (orderData[reverseIndex].status ==
+                                "waiting") {
                               return lightGrey;
                             }
                           }()),
@@ -279,7 +379,7 @@ class OrderWidget extends StatelessWidget {
                               );
                             },
                             title: Text(
-                              "ORDER #${orderData![index].orderQueue}",
+                              "ORDER #${orderData[reverseIndex].orderQueue}",
                               style: const TextStyle(
                                 color: darkMainColor,
                                 fontWeight: FontWeight.bold,
@@ -287,7 +387,8 @@ class OrderWidget extends StatelessWidget {
                               ),
                             ),
                             subtitle: Text(
-                              orderData![index].orderItem.join(", "),
+                              // orderData[reverseIndex].orderItems.join(", "),
+                              orderData[reverseIndex].orderItems,
                               style: const TextStyle(
                                 color: lightMainColor,
                                 fontWeight: FontWeight.bold,
@@ -301,7 +402,7 @@ class OrderWidget extends StatelessWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    "รวมทั้งหมด ${NumberFormat.decimalPattern().format(orderData![index].totalPrice)} บาท",
+                                    "รวมทั้งหมด ${orderData[reverseIndex].totalPrice} บาท",
                                     style: const TextStyle(
                                       fontSize: 20,
                                       color: darkMainColor,
@@ -323,11 +424,11 @@ class OrderWidget extends StatelessWidget {
                   return Card(
                     // color: mainColor,
                     color: (() {
-                      if (orderData![index].status == "paid") {
+                      if (orderData[reverseIndex].status == "paid") {
                         return mainColor;
-                      } else if (orderData![index].status == "done") {
+                      } else if (orderData[reverseIndex].status == "done") {
                         return Colors.green[100];
-                      } else if (orderData![index].status == "waiting") {
+                      } else if (orderData[reverseIndex].status == "waiting") {
                         return lightGrey;
                       }
                     }()),
@@ -340,7 +441,7 @@ class OrderWidget extends StatelessWidget {
                         );
                       },
                       title: Text(
-                        "ORDER #${orderData![index].orderQueue}",
+                        "ORDER #${orderData[reverseIndex].orderQueue}",
                         style: const TextStyle(
                           color: darkMainColor,
                           fontWeight: FontWeight.bold,
@@ -348,7 +449,8 @@ class OrderWidget extends StatelessWidget {
                         ),
                       ),
                       subtitle: Text(
-                        orderData![index].orderItem.join(", "),
+                        // orderData[reverseIndex].orderItem.join(", "),
+                        orderData[reverseIndex].orderItems,
                         style: const TextStyle(
                           color: lightMainColor,
                           fontWeight: FontWeight.bold,
@@ -362,7 +464,7 @@ class OrderWidget extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              "รวมทั้งหมด ${NumberFormat.decimalPattern().format(orderData![index].totalPrice)} บาท",
+                              "รวมทั้งหมด ${orderData[reverseIndex].totalPrice} บาท",
                               style: const TextStyle(
                                 fontSize: 20,
                                 color: darkMainColor,

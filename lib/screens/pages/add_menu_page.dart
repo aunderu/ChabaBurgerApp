@@ -1,11 +1,11 @@
+
 import 'dart:ui';
 
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-import '../../models/menu_model.dart';
-import '../../models/menu_repository.dart';
 import '../../utils/color.dart';
 
 class AddMenuPage extends StatefulWidget {
@@ -17,6 +17,7 @@ class AddMenuPage extends StatefulWidget {
 
 class _AddMenuPageState extends State<AddMenuPage> {
   final _formKey = GlobalKey<FormState>();
+
   List<String> items = [
     "ทั้งหมด",
     "เบอร์เกอร์",
@@ -26,9 +27,63 @@ class _AddMenuPageState extends State<AddMenuPage> {
     "อื่น ๆ",
   ];
 
+  TextEditingController? nameController;
+  TextEditingController? priceController;
+  TextEditingController? salePriceController;
+
+  @override
+  void initState() {
+    super.initState();
+
+    nameController = TextEditingController();
+    priceController = TextEditingController();
+    salePriceController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    nameController?.dispose();
+    priceController?.dispose();
+    salePriceController?.dispose();
+    super.dispose();
+  }
+
+  // Future<void> addMenu(
+  //   String category,
+  //   String name,
+  //   String imgUrl,
+  //   int price,
+  //   int salePrice,
+  // ) async {
+  //   await menu
+  //       .add({
+  //         'category': category,
+  //         'name': name,
+  //         'img': imgUrl,
+  //         'price': price,
+  //         'sale_price': salePrice,
+  //         'create_at': Timestamp.now(),
+  //         'status': "selling",
+  //       })
+  //       .then((value) => Get.snackbar(
+  //             'เรียบร้อย!',
+  //             'เพิ่มข้อมูลเสร็จสิ้น',
+  //             snackPosition: SnackPosition.BOTTOM,
+  //             backgroundColor: Colors.green[300],
+  //           ))
+  //       .catchError((error) => Get.snackbar(
+  //             'มีบางอย่างผิดพลาด',
+  //             '$error',
+  //             snackPosition: SnackPosition.BOTTOM,
+  //             colorText: Colors.white,
+  //             backgroundColor: Colors.red[300],
+  //           ));
+  //   setState(() {});
+  // }
+
   String? selectedItem;
 
-  final menuController = Get.put(MemuRepository());
+  String imageUrl = '';
 
   @override
   Widget build(BuildContext context) {
@@ -48,14 +103,14 @@ class _AddMenuPageState extends State<AddMenuPage> {
           ),
           Expanded(
             flex: 8,
-            child: FutureBuilder<List<MenuModel>>(
-              future: menuController.getAllMenu(),
+            child: FutureBuilder(
+              // future: menuController.getAllMenu(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.done) {
                   if (snapshot.hasData) {
                     var menuData = snapshot.data;
                     return GridView.builder(
-                      itemCount: menuData!.length + 1,
+                      // itemCount: menuData!.length + 1,
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 4,
@@ -75,22 +130,25 @@ class _AddMenuPageState extends State<AddMenuPage> {
                                         FocusScope.of(context).unfocus(),
                                     child: StatefulBuilder(
                                       builder: (context, setState) {
-                                        return AlertDialog(
-                                          scrollable: true,
-                                          title: const Text('เพิ่มรายการอาหาร'),
-                                          elevation: 30,
-                                          content: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: SizedBox(
-                                              width: MediaQuery.of(context)
-                                                      .size
-                                                      .width *
-                                                  0.5,
-                                              height: MediaQuery.of(context)
-                                                      .size
-                                                      .height *
-                                                  0.5,
-                                              child: Form(
+                                        return Form(
+                                          key: _formKey,
+                                          child: AlertDialog(
+                                            scrollable: true,
+                                            title:
+                                                const Text('เพิ่มรายการอาหาร'),
+                                            elevation: 30,
+                                            content: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: SizedBox(
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.5,
+                                                height: MediaQuery.of(context)
+                                                        .size
+                                                        .height *
+                                                    0.5,
                                                 child: Column(
                                                   children: <Widget>[
                                                     Container(
@@ -134,10 +192,21 @@ class _AddMenuPageState extends State<AddMenuPage> {
                                                     ),
                                                     const SizedBox(height: 30),
                                                     TextFormField(
+                                                      controller:
+                                                          nameController,
                                                       decoration:
                                                           const InputDecoration(
                                                         labelText: 'ชิ่อรายการ',
                                                       ),
+                                                      keyboardType:
+                                                          TextInputType.name,
+                                                      validator: (value) {
+                                                        if (value == null ||
+                                                            value.isEmpty) {
+                                                          return 'กรุณาใส่ชื่อของรายการอาหาร';
+                                                        }
+                                                        return null;
+                                                      },
                                                     ),
                                                     const SizedBox(height: 10),
                                                     Row(
@@ -152,6 +221,8 @@ class _AddMenuPageState extends State<AddMenuPage> {
                                                                   .width *
                                                               0.2,
                                                           child: TextFormField(
+                                                            controller:
+                                                                priceController,
                                                             decoration:
                                                                 const InputDecoration(
                                                               labelText:
@@ -159,6 +230,18 @@ class _AddMenuPageState extends State<AddMenuPage> {
                                                               suffix:
                                                                   Text('บาท'),
                                                             ),
+                                                            keyboardType:
+                                                                TextInputType
+                                                                    .number,
+                                                            validator: (value) {
+                                                              if (value ==
+                                                                      null ||
+                                                                  value
+                                                                      .isEmpty) {
+                                                                return 'กรุณาใส่ราคาตั้ง';
+                                                              }
+                                                              return null;
+                                                            },
                                                           ),
                                                         ),
                                                         SizedBox(
@@ -168,6 +251,8 @@ class _AddMenuPageState extends State<AddMenuPage> {
                                                                   .width *
                                                               0.2,
                                                           child: TextFormField(
+                                                            controller:
+                                                                salePriceController,
                                                             decoration:
                                                                 const InputDecoration(
                                                               labelText:
@@ -175,39 +260,216 @@ class _AddMenuPageState extends State<AddMenuPage> {
                                                               suffix:
                                                                   Text('บาท'),
                                                             ),
+                                                            keyboardType:
+                                                                TextInputType
+                                                                    .number,
+                                                            validator: (value) {
+                                                              if (value ==
+                                                                      null ||
+                                                                  value
+                                                                      .isEmpty) {
+                                                                return 'กรุณาใส่ราคาขาย';
+                                                              }
+                                                              return null;
+                                                            },
                                                           ),
                                                         ),
                                                       ],
                                                     ),
                                                     const SizedBox(height: 10),
+                                                    const Divider(
+                                                      color: lightGrey,
+                                                      height: 50,
+                                                      thickness: 1,
+                                                    ),
+                                                    imageUrl == ""
+                                                        ? SizedBox(
+                                                            width: MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .width *
+                                                                0.10,
+                                                            height: MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .height *
+                                                                0.15,
+                                                            child: DottedBorder(
+                                                              color: darkGray,
+                                                              strokeWidth: 1,
+                                                              borderType:
+                                                                  BorderType
+                                                                      .RRect,
+                                                              radius: const Radius
+                                                                  .circular(20),
+                                                              strokeCap:
+                                                                  StrokeCap
+                                                                      .round,
+                                                              dashPattern: const [
+                                                                10,
+                                                                10
+                                                              ],
+                                                              child:
+                                                                  GestureDetector(
+                                                                onTap:
+                                                                    () async {
+                                                                  PermissionStatus
+                                                                      cameraStatus =
+                                                                      await Permission
+                                                                          .camera
+                                                                          .request();
+                                                                  if (cameraStatus ==
+                                                                      PermissionStatus
+                                                                          .granted) {
+                                                                    // ImagePicker
+                                                                    //     imagePicker =
+                                                                    //     ImagePicker();
+                                                                    // XFile?
+                                                                    //     file =
+                                                                    //     await imagePicker.pickImage(
+                                                                    //         source:
+                                                                    //             ImageSource.gallery);
+
+                                                                    // if (file ==
+                                                                    //     null) {
+                                                                    //   return;
+                                                                    // }
+
+                                                                    // String
+                                                                    //     uniqueFileName =
+                                                                    //     DateTime.now()
+                                                                    //         .millisecondsSinceEpoch
+                                                                    //         .toString();
+
+                                                                    // Reference
+                                                                    //     referenceRoot =
+                                                                    //     FirebaseStorage
+                                                                    //         .instance
+                                                                    //         .ref();
+                                                                    // Reference
+                                                                    //     referenceDirImage =
+                                                                    //     referenceRoot
+                                                                    //         .child('images');
+
+                                                                    // Reference
+                                                                    //     referenceImageToUpload =
+                                                                    //     referenceDirImage
+                                                                    //         .child(uniqueFileName);
+
+                                                                    // try {
+                                                                    //   await referenceImageToUpload
+                                                                    //       .putFile(
+                                                                    //           File(file.path));
+
+                                                                    //   imageUrl =
+                                                                    //       await referenceImageToUpload
+                                                                    //           .getDownloadURL();
+                                                                    // } catch (error) {}
+                                                                  }
+                                                                  if (cameraStatus ==
+                                                                      PermissionStatus
+                                                                          .denied) {}
+                                                                  if (cameraStatus ==
+                                                                      PermissionStatus
+                                                                          .permanentlyDenied) {
+                                                                    openAppSettings();
+                                                                  }
+                                                                },
+                                                                child:
+                                                                    Container(
+                                                                  decoration:
+                                                                      BoxDecoration(
+                                                                    color: Colors
+                                                                        .white,
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            35),
+                                                                  ),
+                                                                  child:
+                                                                      const Center(
+                                                                    child: Icon(
+                                                                      Icons
+                                                                          .add_photo_alternate_outlined,
+                                                                      // color: add,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          )
+                                                        : const SizedBox
+                                                            .shrink(),
+                                                    imageUrl != ""
+                                                        ? SizedBox(
+                                                            width: MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .width *
+                                                                0.10,
+                                                            height: MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .height *
+                                                                0.15,
+                                                            child:
+                                                                Image.network(
+                                                              imageUrl,
+                                                            ),
+                                                          )
+                                                        : const SizedBox
+                                                            .shrink()
                                                   ],
                                                 ),
                                               ),
                                             ),
+                                            actions: [
+                                              TextButton(
+                                                child: const Text("ยกเลิก"),
+                                                onPressed: () =>
+                                                    Navigator.pop(context),
+                                              ),
+                                              const SizedBox(width: 20),
+                                              ElevatedButton.icon(
+                                                onPressed: () {
+                                                  if (_formKey.currentState!
+                                                      .validate()) {
+                                                    if (selectedItem == null) {}
+
+                                                    int priceValue = int.parse(
+                                                        priceController!.text);
+                                                    int salePriceValue =
+                                                        int.parse(
+                                                            salePriceController!
+                                                                .text);
+                                                    // addMenu(
+                                                    //   selectedItem!,
+                                                    //   nameController!.text,
+                                                    //   imageUrl,
+                                                    //   priceValue,
+                                                    //   salePriceValue,
+                                                    // );
+                                                    nameController!.clear();
+                                                    priceController!.clear();
+                                                    salePriceController!
+                                                        .clear();
+                                                    Get.back();
+                                                  }
+                                                },
+                                                style: ButtonStyle(
+                                                  backgroundColor:
+                                                      MaterialStateProperty.all(
+                                                          Colors.green),
+                                                ),
+                                                icon: const Icon(
+                                                  Icons.add_box_rounded,
+                                                  color: Colors.white,
+                                                ),
+                                                label: const Text(
+                                                  'เพิ่มรายการ',
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                          actions: [
-                                            TextButton(
-                                              child: const Text("ยกเลิก"),
-                                              onPressed: () =>
-                                                  Navigator.pop(context),
-                                            ),
-                                            const SizedBox(width: 20),
-                                            ElevatedButton.icon(
-                                              onPressed: () {},
-                                              style: ButtonStyle(
-                                                backgroundColor:
-                                                    MaterialStateProperty.all(
-                                                        Colors.green),
-                                              ),
-                                              icon: const Icon(
-                                                Icons.add_box_rounded,
-                                                color: Colors.white,
-                                              ),
-                                              label: const Text(
-                                                'เพิ่มรายการ',
-                                              ),
-                                            ),
-                                          ],
                                         );
                                       },
                                     ),
@@ -241,12 +503,12 @@ class _AddMenuPageState extends State<AddMenuPage> {
                           onTap: () {},
                           child: Container(
                             decoration: BoxDecoration(
-                              image: DecorationImage(
-                                image: NetworkImage(
-                                  menuData[index - 1].img,
-                                ),
-                                fit: BoxFit.fill,
-                              ),
+                              // image: DecorationImage(
+                              //   image: NetworkImage(
+                              //     menuData[index - 1].img,
+                              //   ),
+                              //   fit: BoxFit.fill,
+                              // ),
                               color: mainColor,
                               borderRadius: BorderRadius.circular(35),
                             ),
@@ -276,37 +538,40 @@ class _AddMenuPageState extends State<AddMenuPage> {
                                         Padding(
                                           padding: const EdgeInsets.only(
                                               top: 5, left: 10, right: 10),
-                                          child: Text(
-                                            menuData[index - 1].name,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 25,
-                                              color: mainColor,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
+                                          child: FittedBox(
+                                            // child: Text(
+                                            //   menuData[index - 1].name,
+                                            //   style: const TextStyle(
+                                            //     fontWeight: FontWeight.bold,
+                                            //     fontSize: 25,
+                                            //     color: mainColor,
+                                            //   ),
+                                            //   maxLines: 1,
+                                            //   overflow: TextOverflow.ellipsis,
+                                            // ),
                                           ),
                                         ),
                                         // หมวดหมู่ของเมนู
                                         Padding(
                                           padding:
                                               const EdgeInsets.only(bottom: 5),
-                                          child: Text(
-                                            menuData[index - 1].category,
-                                            style: const TextStyle(
-                                              color: mainColor,
-                                            ),
-                                          ),
+                                          // child: Text(
+                                          //   menuData[index - 1].category,
+                                          //   style: const TextStyle(
+                                          //     color: mainColor,
+                                          //   ),
+                                          // ),
                                         ),
                                         // ราคา
                                         Padding(
                                           padding:
                                               const EdgeInsets.only(bottom: 5),
-                                          child: Text(
-                                            "${menuData[index - 1].salePrice} บาท",
-                                            style: const TextStyle(
-                                              color: mainColor,
-                                            ),
-                                          ),
+                                          // child: Text(
+                                          //   "${menuData[index - 1].salePrice} บาท",
+                                          //   style: const TextStyle(
+                                          //     color: mainColor,
+                                          //   ),
+                                          // ),
                                         ),
                                       ],
                                     ),

@@ -1,6 +1,4 @@
 import 'package:chaba_burger_app/auth/auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../utils/color.dart';
@@ -22,11 +20,6 @@ class _ScreenPageState extends State<ScreenPage> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   TextEditingController? searchController;
 
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  User? user = FirebaseAuth.instance.currentUser;
-
-  CollectionReference usersCollection =
-      FirebaseFirestore.instance.collection('users');
 
   /// Views to display
   final List<Widget> _screens = const [
@@ -60,8 +53,8 @@ class _ScreenPageState extends State<ScreenPage> {
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
-      child: StreamBuilder<DocumentSnapshot>(
-          stream: usersCollection.doc(user!.uid).snapshots(),
+      child: FutureBuilder(
+          // future: usersCollection.doc(user!.uid).snapshots(),
           builder: (ctx, streamSnapshot) {
             var userData = streamSnapshot;
             if (userData.connectionState == ConnectionState.waiting) {
@@ -84,7 +77,7 @@ class _ScreenPageState extends State<ScreenPage> {
 
   Widget screenPageWidget(
     GlobalKey<ScaffoldState> scaffoldKey,
-    AsyncSnapshot<DocumentSnapshot<Object?>> userData,
+    userData,
   ) {
     return Scaffold(
       key: scaffoldKey,
@@ -127,7 +120,7 @@ class _ScreenPageState extends State<ScreenPage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                onTap: () => Auth().signOut(),
+                // onTap: () => Auth().signOut(),
               ),
             ],
           ),

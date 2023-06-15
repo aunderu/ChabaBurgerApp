@@ -1,6 +1,4 @@
 import 'package:chaba_burger_app/utils/color.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'auth.dart';
@@ -21,20 +19,20 @@ class _LoginPageState extends State<LoginPage> {
 
   final _formKey = GlobalKey<FormState>();
 
-  Future<void> signInWithEmailAndPassWord() async {
-    try {
-      await Auth().signInWithEmailAndPassword(
-        email: userIdController.text,
-        password: userPasswordController.text,
-      );
+  // Future<void> signInWithEmailAndPassWord() async {
+  //   try {
+  //     await Auth().signInWithEmailAndPassword(
+  //       email: userIdController.text,
+  //       password: userPasswordController.text,
+  //     );
 
-      // addUserDetails();
-    } on FirebaseAuthException catch (e) {
-      setState(() {
-        errorMessage = e.message;
-      });
-    }
-  }
+  //     // addUserDetails();
+  //   } on FirebaseAuthException catch (e) {
+  //     setState(() {
+  //       errorMessage = e.message;
+  //     });
+  //   }
+  // }
 
   // Future addUserDetails() async {
   //   await FirebaseFirestore.instance.collection('users').add({
@@ -252,7 +250,8 @@ class _LoginPageState extends State<LoginPage> {
                                     if (validate) {
                                       // print(userIdController.text);
                                       // print(userPasswordController.text);
-                                      signInWithEmailAndPassWord();
+                                      
+                                      // signInWithEmailAndPassWord();
                                     }
                                   },
                                   child: Ink(

@@ -17,10 +17,11 @@ dependencies:
   get: ^4.6.5
   intl: ^0.18.1
   dotted_border: ^2.0.0+3
-  firebase_core: ^2.13.0
-  firebase_auth: ^4.6.1
-  cloud_firestore: ^4.7.1
   shared_preferences: ^2.0.15
+  cached_network_image: ^3.2.3
+  image_picker: ^0.8.7+5
+  permission_handler: ^10.0.0
+  http: ^0.13.6
 
 dev_dependencies:
   flutter_test:

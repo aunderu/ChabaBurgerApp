@@ -1,16 +1,17 @@
 import 'dart:ui';
 
 import 'package:chaba_burger_app/models/category_model.dart';
-import 'package:chaba_burger_app/models/category_repository.dart';
-import 'package:chaba_burger_app/models/menu_model.dart';
+import 'package:chaba_burger_app/models/menu_select_item.dart';
+import 'package:chaba_burger_app/models/remote_service.dart';
 import 'package:chaba_burger_app/utils/color.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get_core/get_core.dart';
-import 'package:get/get_instance/get_instance.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
 
-import '../../models/menu_repository.dart';
+import '../../models/menu_model.dart';
+import 'sub_page/sub_order_page.dart';
 
 class MenuPage extends StatefulWidget {
   const MenuPage({super.key});
@@ -20,11 +21,56 @@ class MenuPage extends StatefulWidget {
 }
 
 class _MenuPageState extends State<MenuPage> {
-  // CollectionReference menuCollection =
-  //     FirebaseFirestore.instance.collection('menus');
+  List<MenuSelectItem> selectedItems = [];
+  int _totalPrice = 0;
 
-  final menuController = Get.put(MemuRepository());
-  final categoryController = Get.put(CategoryRepository());
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  Future<bool> addOrder(String status, int totalPrice) async {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return const Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(darkMainColor),
+            strokeWidth: 7,
+          ),
+        );
+      },
+    );
+
+    Map<String, String> headers = {
+      'Content-type': 'multipart/form-data',
+    };
+
+    var request = http.MultipartRequest(
+        'POST', Uri.parse("https://chaba-pos.com/api/order/store"))
+      ..headers.addAll(headers)
+      ..fields.addAll({
+        'order_queue': "00001",
+        'status': status,
+        'total_price': totalPrice.toString(),
+      });
+
+    for (var i = 0; i < selectedItems.length; i++) {
+      request.fields.addAll({
+        'order_items[$i]': selectedItems[i].name,
+      });
+    }
+
+    var response = await request.send();
+
+    Get.back();
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,109 +84,48 @@ class _MenuPageState extends State<MenuPage> {
               // menu
               Expanded(
                 flex: 8,
-                child: FutureBuilder<List<MenuModel>>(
-                  future: menuController.getAllMenu(),
+                child: FutureBuilder<MenuModel?>(
+                  future: RemoteService().getMenuModel(),
                   builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done) {
-                      if (snapshot.hasData) {
-                        var menuData = snapshot.data;
-                        return GridView.builder(
-                          itemCount: menuData!.length,
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            crossAxisSpacing: 30,
-                            mainAxisSpacing: 30,
-                          ),
-                          physics: const BouncingScrollPhysics(),
-                          itemBuilder: (context, index) {
-                            return GestureDetector(
-                              onTap: () {},
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                    image: NetworkImage(
-                                      menuData[index].img,
-                                    ),
-                                    // image: AssetImage(
-                                    //     "assets/images/mockup-burger-img.jpg"),
-                                    fit: BoxFit.fill,
-                                  ),
-                                  color: mainColor,
-                                  borderRadius: BorderRadius.circular(35),
-                                ),
-                                child: Align(
-                                  alignment: const AlignmentDirectional(0, 1),
-                                  child: ClipRRect(
-                                    child: BackdropFilter(
-                                      filter: ImageFilter.blur(
-                                          sigmaX: 3, sigmaY: 3),
-                                      child: Container(
-                                        width: double.infinity,
-                                        height:
-                                            MediaQuery.of(context).size.height *
-                                                0.1,
-                                        decoration: const BoxDecoration(
-                                          borderRadius: BorderRadius.only(
-                                            bottomLeft: Radius.circular(35),
-                                            bottomRight: Radius.circular(35),
-                                          ),
-                                          color: Color.fromARGB(154, 40, 26, 1),
-                                        ),
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            // ชื่อเมนู
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.only(top: 5),
-                                              child: Text(
-                                                menuData[index].name,
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 25,
-                                                  color: mainColor,
-                                                ),
-                                              ),
-                                            ),
-                                            // หมวดหมู่ของเมนู
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  bottom: 5),
-                                              child: Text(
-                                                menuData[index].category,
-                                                style: const TextStyle(
-                                                  color: mainColor,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
+                    switch (snapshot.connectionState) {
+                      case ConnectionState.none:
+                        return const CircularProgressIndicator();
+                      case ConnectionState.waiting:
+                        if (snapshot.hasData) {
+                          var data = snapshot.data!.data;
+                          return menuItemWidget(data);
+                        } else {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                      case ConnectionState.active:
+                        if (snapshot.hasData) {
+                          var data = snapshot.data!.data;
+                          return menuItemWidget(data);
+                        } else {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                      case ConnectionState.done:
+                        if (snapshot.hasError) {
+                          return const Center(
+                              child: Text("ดูเหมือนมีอะไรผิดปกติ.."));
+                        } else {
+                          if (snapshot.hasData) {
+                            var data = snapshot.data!.data;
+                            return menuItemWidget(data);
+                          } else if (snapshot.hasError) {
+                            return Center(
+                              child: Text(snapshot.error.toString()),
                             );
-                          },
-                          padding: const EdgeInsets.all(20),
-                        );
-                      } else if (snapshot.hasError) {
-                        return Center(
-                          child: Text(snapshot.error.toString()),
-                        );
-                      } else {
-                        return const Center(
-                          child: Text('ดูเหมือนมีบางอย่างผิดปกติ..'),
-                        );
-                      }
-                    } else {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
+                          } else {
+                            return const Center(
+                              child: Text('ดูเหมือนมีบางอย่างผิดปกติ..'),
+                            );
+                          }
+                        }
                     }
                   },
                 ),
@@ -161,7 +146,7 @@ class _MenuPageState extends State<MenuPage> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: FutureBuilder<List<CategoryModel>>(
-                        future: categoryController.getAllCategory(),
+                        // future: categoryController.getAllCategory(),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.done) {
@@ -204,17 +189,17 @@ class _MenuPageState extends State<MenuPage> {
                                           ),
                                           alignment:
                                               const AlignmentDirectional(0, 0),
-                                          child: Text(
-                                            categoryData[index].name,
-                                            style: const TextStyle(
-                                              // color: widget.current == index
-                                              //     ? Colors.white
-                                              //     : Colors.black,
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 20,
-                                            ),
-                                          ),
+                                          // child: Text(
+                                          //   categoryData[index].name,
+                                          //   style: const TextStyle(
+                                          //     // color: widget.current == index
+                                          //     //     ? Colors.white
+                                          //     //     : Colors.black,
+                                          //     color: Colors.white,
+                                          //     fontWeight: FontWeight.bold,
+                                          //     fontSize: 20,
+                                          //   ),
+                                          // ),
                                         ),
                                       ),
                                     ],
@@ -256,7 +241,7 @@ class _MenuPageState extends State<MenuPage> {
                   child: Padding(
                     padding: EdgeInsets.fromLTRB(0, 0, 0, 20),
                     child: Text(
-                      "ORDER #00123",
+                      "ORDER #",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 30,
@@ -287,7 +272,7 @@ class _MenuPageState extends State<MenuPage> {
                             child: Padding(
                               padding: const EdgeInsets.all(15.0),
                               child: ListView.builder(
-                                itemCount: 0,
+                                itemCount: selectedItems.length,
                                 physics: const BouncingScrollPhysics(),
                                 // itemExtent: 85,
                                 itemBuilder: (context, index) {
@@ -320,18 +305,21 @@ class _MenuPageState extends State<MenuPage> {
                                                       mainAxisAlignment:
                                                           MainAxisAlignment
                                                               .center,
-                                                      children: const [
+                                                      children: [
                                                         Text(
-                                                          'เบอร์เกอร์',
-                                                          style: TextStyle(
+                                                          selectedItems[index]
+                                                              .name,
+                                                          style:
+                                                              const TextStyle(
                                                             fontWeight:
                                                                 FontWeight.bold,
                                                             fontSize: 20,
                                                           ),
                                                         ),
                                                         Text(
-                                                          'ราคา 259 x 1 บาท',
-                                                          style: TextStyle(
+                                                          'ราคา ${selectedItems[index].price} x ${selectedItems[index].quantity} ชิ้น',
+                                                          style:
+                                                              const TextStyle(
                                                             color: darkGray,
                                                             fontSize: 15,
                                                           ),
@@ -343,17 +331,20 @@ class _MenuPageState extends State<MenuPage> {
                                                     mainAxisAlignment:
                                                         MainAxisAlignment
                                                             .center,
-                                                    children: const [
-                                                      Text(
-                                                        'ราคา',
+                                                    children: [
+                                                      const Text(
+                                                        'บาท',
                                                         style: TextStyle(
                                                           fontWeight:
                                                               FontWeight.bold,
                                                         ),
                                                       ),
                                                       Text(
-                                                        '259',
-                                                        style: TextStyle(),
+                                                        '${selectedItems[index].price * selectedItems[index].quantity}',
+                                                        // _totalPrice.toString(),
+
+                                                        style:
+                                                            const TextStyle(),
                                                       ),
                                                     ],
                                                   ),
@@ -361,14 +352,39 @@ class _MenuPageState extends State<MenuPage> {
                                               ),
                                             ),
                                           ),
-                                          Container(
-                                            decoration: const BoxDecoration(
-                                              color: Colors.red,
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: const Icon(
-                                              Icons.close_rounded,
-                                              color: Colors.white,
+                                          GestureDetector(
+                                            onTap: () {
+                                              if (selectedItems[index]
+                                                      .quantity >
+                                                  1) {
+                                                setState(() {
+                                                  selectedItems[index] =
+                                                      MenuSelectItem(
+                                                    id: selectedItems[index].id,
+                                                    name: selectedItems[index]
+                                                        .name,
+                                                    price: selectedItems[index]
+                                                        .price,
+                                                    quantity:
+                                                        selectedItems[index]
+                                                            .quantity -= 1,
+                                                  );
+                                                });
+                                              } else {
+                                                setState(() {
+                                                  selectedItems.removeAt(index);
+                                                });
+                                              }
+                                            },
+                                            child: Container(
+                                              decoration: const BoxDecoration(
+                                                color: Colors.red,
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: const Icon(
+                                                Icons.remove,
+                                                color: Colors.white,
+                                              ),
                                             ),
                                           ),
                                         ],
@@ -404,7 +420,17 @@ class _MenuPageState extends State<MenuPage> {
                                         ),
                                       ),
                                       Text(
-                                        '${NumberFormat.decimalPattern().format(0)} บาท',
+                                        (() {
+                                          _totalPrice = selectedItems.fold(
+                                            0,
+                                            (previousValue, element) =>
+                                                previousValue +
+                                                (element.price *
+                                                    element.quantity),
+                                          );
+
+                                          return '${NumberFormat.decimalPattern().format(_totalPrice)} บาท';
+                                        }()),
                                         style: const TextStyle(
                                           fontSize: 20,
                                         ),
@@ -421,18 +447,43 @@ class _MenuPageState extends State<MenuPage> {
                                         MainAxisAlignment.spaceAround,
                                     children: [
                                       GestureDetector(
-                                        onTap: () {},
+                                        onTap: () {
+                                          // setState(() {
+                                          //   selectedItems.clear();
+                                          // });
+
+                                          // print(
+                                          //     "______________________________");
+                                          // print(selectedItems);
+
+                                          addOrder("waiting", _totalPrice)
+                                              .then((value) {
+                                            if (value == true) {
+                                              Get.snackbar(
+                                                "เรียบร้อย!",
+                                                "ออเดอร์คิวที่ #0001 เรียบร้อย รายการดังนี้ : ${selectedItems.join(", ")}",
+                                                backgroundColor:
+                                                    Colors.green[50],
+                                                colorText: Colors.black,
+                                              );
+
+                                              setState(() {
+                                                selectedItems.clear();
+                                              });
+                                            }
+                                          });
+                                        },
                                         child: Container(
                                           height: 60,
                                           width: 120,
                                           decoration: BoxDecoration(
-                                            color: Colors.red[100],
+                                            color: Colors.green[200],
                                             borderRadius:
                                                 BorderRadius.circular(20),
                                           ),
                                           child: const Center(
                                             child: Text(
-                                              "ยกเลิกออเดอร์",
+                                              "ส่งออเดอร์",
                                               style: TextStyle(
                                                 fontSize: 17,
                                               ),
@@ -441,18 +492,20 @@ class _MenuPageState extends State<MenuPage> {
                                         ),
                                       ),
                                       GestureDetector(
-                                        onTap: () {},
+                                        onTap: () {
+                                          Get.to(() => const SubOrderPage());
+                                        },
                                         child: Container(
                                           height: 60,
                                           width: 120,
                                           decoration: BoxDecoration(
-                                            color: Colors.green[100],
+                                            color: Colors.blueGrey[100],
                                             borderRadius:
                                                 BorderRadius.circular(20),
                                           ),
                                           child: const Center(
                                             child: Text(
-                                              "ส่งออเดอร์",
+                                              "ชำระเงิน",
                                               style: TextStyle(
                                                 fontSize: 17,
                                               ),
@@ -476,6 +529,198 @@ class _MenuPageState extends State<MenuPage> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget menuItemWidget(List<Datum> data) {
+    return GridView.builder(
+      itemCount: 2,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 30,
+        mainAxisSpacing: 30,
+      ),
+      physics: const BouncingScrollPhysics(),
+      itemBuilder: (context, index) {
+        return GestureDetector(
+          onTap: () {
+            if (selectedItems
+                .where((element) => element.id == data[index].id)
+                .isEmpty) {
+              setState(() {
+                selectedItems.add(
+                  MenuSelectItem(
+                    id: data[index].id,
+                    name: data[index].name,
+                    price: data[index].price,
+                    quantity: 1,
+                  ),
+                );
+
+                _totalPrice = selectedItems.fold(
+                    0,
+                    (previousValue, element) =>
+                        previousValue + (element.price * element.quantity));
+              });
+            } else {
+              setState(() {
+                MenuSelectItem(
+                  id: selectedItems[selectedItems
+                          .indexWhere((item) => item.id == data[index].id)]
+                      .id,
+                  name: selectedItems[selectedItems
+                          .indexWhere((item) => item.id == data[index].id)]
+                      .name,
+                  price: selectedItems[selectedItems
+                          .indexWhere((item) => item.id == data[index].id)]
+                      .price,
+                  quantity: selectedItems[selectedItems
+                          .indexWhere((item) => item.id == data[index].id)]
+                      .quantity += 1,
+                );
+
+                _totalPrice = selectedItems.fold(
+                    0,
+                    (previousValue, element) =>
+                        previousValue + (element.price * element.quantity));
+              });
+            }
+          },
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  image: const DecorationImage(
+                    image: NetworkImage(
+                      // data[index].img,
+                      "https://chaba-pos.com/storage/menu_image/Thai%20Stlye_20230612212830.jpg",
+                    ),
+                    // image: AssetImage(
+                    //     "assets/images/mockup-burger-img.jpg"),
+                    fit: BoxFit.fill,
+                  ),
+                  color: mainColor,
+                  borderRadius: BorderRadius.circular(35),
+                ),
+                child: Align(
+                  alignment: const AlignmentDirectional(0, 1),
+                  child: ClipRRect(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+                      child: Container(
+                        width: double.infinity,
+                        height: MediaQuery.of(context).size.height * 0.1,
+                        decoration: const BoxDecoration(
+                          borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(35),
+                            bottomRight: Radius.circular(35),
+                          ),
+                          color: Color.fromARGB(154, 40, 26, 1),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            left: 10,
+                            right: 10,
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              // ชื่อเมนู
+                              FittedBox(
+                                child: Text(
+                                  data[index].name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 25,
+                                    color: mainColor,
+                                  ),
+                                  maxLines: 1,
+                                ),
+                              ),
+                              // หมวดหมู่ของเมนู
+                              Text(
+                                data[index].category,
+                                style: const TextStyle(
+                                  color: mainColor,
+                                ),
+                              ),
+                              // ราคา
+                              Text(
+                                "${data[index].price} บาท",
+                                style: const TextStyle(
+                                  color: mainColor,
+                                  fontSize: 20,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              // selectedItems
+              //         .where((element) => element.name == data[index].name)
+              //         .isNotEmpty
+              //     ? Align(
+              //         alignment: Alignment.topRight,
+              //         child: GestureDetector(
+              //           onTap: () {
+              //             setState(() {
+              //               selectedItems.removeWhere(
+              //                   (element) => element.name == data[index].name);
+              //             });
+              //           },
+              //           child: Container(
+              //             decoration: const BoxDecoration(
+              //               color: Colors.red,
+              //               shape: BoxShape.circle,
+              //             ),
+              //             child: const Icon(
+              //               Icons.close_rounded,
+              //               color: Colors.white,
+              //               size: 40,
+              //             ),
+              //           ),
+              //         ),
+              //       )
+              //     : const SizedBox.shrink(),
+              selectedItems
+                      .where((element) => element.name == data[index].name)
+                      .isNotEmpty
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+                        child: Container(
+                          width: 75,
+                          color: const Color.fromARGB(211, 40, 26, 1),
+                          child: Text(
+                            selectedItems[selectedItems.indexWhere(
+                                    (element) => element.id == data[index].id)]
+                                .quantity
+                                .toString(),
+                            style: const TextStyle(
+                              fontSize: 60,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    )
+                  : const SizedBox.shrink()
+            ],
+          ),
+        );
+      },
+      padding: const EdgeInsets.all(20),
     );
   }
 }
