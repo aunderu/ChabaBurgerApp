@@ -2,7 +2,7 @@ import 'package:chaba_burger_app/utils/color.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../models/category_model.dart';
+import '../../models/category/category_model.dart';
 
 class AddCategoryPage extends StatefulWidget {
   const AddCategoryPage({super.key});

@@ -20,7 +20,6 @@ class _ScreenPageState extends State<ScreenPage> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   TextEditingController? searchController;
 
-
   /// Views to display
   final List<Widget> _screens = const [
     MenuPage(),
@@ -49,29 +48,29 @@ class _ScreenPageState extends State<ScreenPage> {
 
   @override
   Widget build(BuildContext context) {
-    final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+    final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: FutureBuilder(
           // future: usersCollection.doc(user!.uid).snapshots(),
           builder: (ctx, streamSnapshot) {
-            var userData = streamSnapshot;
-            if (userData.connectionState == ConnectionState.waiting) {
-              // return Scaffold(
-              //   body: Center(
-              //     child: Container(
-              //       height: 150,
-              //       child: Image.asset(
-              //         "assets/images/logo_lowres.jpg",
-              //       ),
-              //     ),
-              //   ),
-              // );
-              return screenPageWidget(scaffoldKey, userData);
-            }
-            return screenPageWidget(scaffoldKey, userData);
-          }),
+        var userData = streamSnapshot;
+        if (userData.connectionState == ConnectionState.waiting) {
+          // return Scaffold(
+          //   body: Center(
+          //     child: Container(
+          //       height: 150,
+          //       child: Image.asset(
+          //         "assets/images/logo_lowres.jpg",
+          //       ),
+          //     ),
+          //   ),
+          // );
+          return screenPageWidget(scaffoldKey, userData);
+        }
+        return screenPageWidget(scaffoldKey, userData);
+      }),
     );
   }
 
@@ -82,50 +81,6 @@ class _ScreenPageState extends State<ScreenPage> {
     return Scaffold(
       key: scaffoldKey,
       resizeToAvoidBottomInset: false,
-      endDrawer: Drawer(
-        child: Material(
-          color: mainColor,
-          child: ListView(
-            children: <Widget>[
-              DrawerHeader(
-                curve: Curves.easeInSine,
-                decoration: const BoxDecoration(color: darkMainColor),
-                child: Center(
-                  child: userData.data != null
-                      ? ListTile(
-                          leading: Image.asset(
-                            'assets/images/profile.png',
-                          ),
-                          title: Text(userData.data!['user_name']),
-                          subtitle: Text(userData.data!['email']),
-                        )
-                      : const SizedBox.shrink(),
-                ),
-              ),
-              // ListTile(
-              //   leading: const Icon(Icons.email),
-              //   title: const Text("Inbox"),
-              //   onTap: () {},
-              // ),
-              // const Divider(color: darkMainColor),
-              ListTile(
-                leading: const Icon(
-                  Icons.exit_to_app_rounded,
-                  color: Colors.red,
-                ),
-                title: const Text(
-                  "ออกจากระบบ",
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                // onTap: () => Auth().signOut(),
-              ),
-            ],
-          ),
-        ),
-      ),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -259,6 +214,21 @@ class _ScreenPageState extends State<ScreenPage> {
             useIndicator: true,
             indicatorColor: mainColor,
             elevation: 1,
+            trailing: Expanded(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.exit_to_app_rounded,
+                      color: Colors.red[400],
+                    ),
+                    onPressed: () {},
+                  ),
+                ),
+              ),
+            ),
             onDestinationSelected: (int index) {
               setState(() {
                 selectedIndex = index;

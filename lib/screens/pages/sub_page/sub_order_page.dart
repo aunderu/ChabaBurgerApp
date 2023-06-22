@@ -1,20 +1,135 @@
-import 'dart:math';
-
+import 'package:chaba_burger_app/models/order/order_detail_model.dart';
+import 'package:chaba_burger_app/models/remote_service.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../../utils/color.dart';
 
 class SubOrderPage extends StatefulWidget {
-  const SubOrderPage({super.key});
+  const SubOrderPage({
+    super.key,
+    required this.orderId,
+  });
+
+  final int orderId;
 
   @override
   State<SubOrderPage> createState() => _SubOrderPageState();
 }
 
 class _SubOrderPageState extends State<SubOrderPage> {
-  final DataTableSource _data = MyData();
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: FutureBuilder<OrderDetailModel?>(
+        future: RemoteService().getOrderDetailModel(widget.orderId.toString()),
+        builder: (context, snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              return Scaffold(
+                appBar: AppBar(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  iconTheme: const IconThemeData(
+                    color: darkMainColor,
+                    size: 30,
+                  ),
+                  titleTextStyle: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 25,
+                    color: Colors.black,
+                  ),
+                ),
+                body: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            case ConnectionState.active:
+              return Scaffold(
+                appBar: AppBar(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  iconTheme: const IconThemeData(
+                    color: darkMainColor,
+                    size: 30,
+                  ),
+                  titleTextStyle: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 25,
+                    color: Colors.black,
+                  ),
+                ),
+                body: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            case ConnectionState.none:
+              return Scaffold(
+                appBar: AppBar(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  iconTheme: const IconThemeData(
+                    color: darkMainColor,
+                    size: 30,
+                  ),
+                  titleTextStyle: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 25,
+                    color: Colors.black,
+                  ),
+                ),
+                body: const Center(child: Text('ไม่มีข้อมูลนี้อยู่ในระบบ..')),
+              );
+            case ConnectionState.done:
+              if (snapshot.hasError) {
+                return Scaffold(
+                  appBar: AppBar(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    iconTheme: const IconThemeData(
+                      color: darkMainColor,
+                      size: 30,
+                    ),
+                    titleTextStyle: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 25,
+                      color: Colors.black,
+                    ),
+                  ),
+                  body: const Center(
+                    child: Text(
+                        'ดูเหมือนมีบางอย่างผิดปกติ กรุณาลองอีกครั้งในภายหลัง'),
+                  ),
+                );
+              } else if (snapshot.hasData) {
+                var data = snapshot.data!;
+                return OrderDetailScreen(orderDetail: data);
+              } else {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+          }
+        },
+      ),
+    );
+  }
+}
 
+class OrderDetailScreen extends StatefulWidget {
+  const OrderDetailScreen({
+    super.key,
+    required this.orderDetail,
+  });
+
+  final OrderDetailModel orderDetail;
+
+  @override
+  State<OrderDetailScreen> createState() => _OrderDetailScreenState();
+}
+
+class _OrderDetailScreenState extends State<OrderDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,7 +140,7 @@ class _SubOrderPageState extends State<SubOrderPage> {
           color: darkMainColor,
           size: 30,
         ),
-        title: const Text("ORDER #00123"),
+        title: Text("ORDER #${widget.orderDetail.data.orderQueue}"),
         titleTextStyle: const TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 25,
@@ -37,22 +152,23 @@ class _SubOrderPageState extends State<SubOrderPage> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
-                children: const [
-                  Icon(
+                children: [
+                  const Icon(
                     Icons.access_time_rounded,
                     color: Colors.black,
                   ),
-                  SizedBox(width: 5),
-                  Text(
+                  const SizedBox(width: 5),
+                  const Text(
                     "เวลา",
                     style: TextStyle(
                       color: Colors.black,
                     ),
                   ),
-                  SizedBox(width: 15),
+                  const SizedBox(width: 15),
                   Text(
-                    "08:02 น.",
-                    style: TextStyle(
+                    // "${widget.orderDetail.createdAt} น.",
+                    DateFormat.jm().format(widget.orderDetail.data.createdAt),
+                    style: const TextStyle(
                       color: darkMainColor,
                       fontSize: 20,
                     ),
@@ -74,15 +190,37 @@ class _SubOrderPageState extends State<SubOrderPage> {
                   flex: 8,
                   child: SizedBox(
                     width: double.infinity,
-                    child: PaginatedDataTable(
-                      columns: const [
-                        DataColumn(label: Text("รายการ")),
-                        DataColumn(label: Text("ราคา (บาท)")),
-                        DataColumn(label: Text("จำนวน")),
-                        DataColumn(label: Text("ผลรวม")),
-                        DataColumn(label: Text("")),
-                      ],
-                      source: _data,
+                    // child: PaginatedDataTable(
+                    //   columns: const [
+                    //     DataColumn(label: Text("รายการ")),
+                    //     DataColumn(label: Text("จำนวน")),
+                    //     DataColumn(label: Text("")),
+                    //   ],
+                    // ),
+                    child: SingleChildScrollView(
+                      child: DataTable(
+                        columns: const [
+                          DataColumn(label: Text('รายการ')),
+                          DataColumn(label: Text('จำนวน')),
+                          DataColumn(label: Text('ตัวเลือก')),
+                        ],
+                        rows: widget.orderDetail.data.orderItems
+                            .map(
+                              (data) => DataRow(cells: [
+                                DataCell(Text(data.name)),
+                                DataCell(Text(data.quantity)),
+                                DataCell(
+                                  IconButton(
+                                    onPressed: () {},
+                                    icon: const Icon(
+                                        Icons.delete_forever_rounded),
+                                    color: mainRed,
+                                  ),
+                                ),
+                              ]),
+                            )
+                            .toList(),
+                      ),
                     ),
                   ),
                 ),
@@ -148,10 +286,10 @@ class _SubOrderPageState extends State<SubOrderPage> {
                                 color: mainColor,
                                 borderRadius: BorderRadius.circular(20),
                               ),
-                              child: Column(
+                              child: const Column(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
+                                children: [
                                   Icon(
                                     Icons.money_rounded,
                                     color: Colors.black45,
@@ -167,10 +305,10 @@ class _SubOrderPageState extends State<SubOrderPage> {
                                 color: lightGrey,
                                 borderRadius: BorderRadius.circular(20),
                               ),
-                              child: Column(
+                              child: const Column(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
+                                children: [
                                   Icon(
                                     Icons.qr_code_2_rounded,
                                     color: Colors.black45,
@@ -212,11 +350,10 @@ class _SubOrderPageState extends State<SubOrderPage> {
                                   border: Border.all(color: darkGray),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 15),
+                                child: const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 15),
                                   child: Row(
-                                    children: const [
+                                    children: [
                                       Expanded(
                                         child: Text(
                                           "ส่วนลด 10%",
@@ -260,36 +397,36 @@ class _SubOrderPageState extends State<SubOrderPage> {
                                                   mainAxisAlignment:
                                                       MainAxisAlignment
                                                           .spaceBetween,
-                                                  children: const [
-                                                    Text(
+                                                  children: [
+                                                    const Text(
                                                       "รวมราคา",
                                                       style: TextStyle(
                                                           color: darkGray),
                                                     ),
                                                     Text(
-                                                      "1000 บาท",
-                                                      style: TextStyle(
+                                                      "${widget.orderDetail.data.totalPrice} บาท",
+                                                      style: const TextStyle(
                                                           color: darkGray),
                                                     ),
                                                   ],
                                                 ),
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: const [
-                                                    Text(
-                                                      "ส่วนลด 10%",
-                                                      style: TextStyle(
-                                                          color: darkGray),
-                                                    ),
-                                                    Text(
-                                                      "100 บาท",
-                                                      style: TextStyle(
-                                                          color: darkGray),
-                                                    ),
-                                                  ],
-                                                ),
+                                                // Row(
+                                                //   mainAxisAlignment:
+                                                //       MainAxisAlignment
+                                                //           .spaceBetween,
+                                                //   children: [
+                                                //     Text(
+                                                //       "ส่วนลด 10%",
+                                                //       style: TextStyle(
+                                                //           color: darkGray),
+                                                //     ),
+                                                //     Text(
+                                                //       "100 บาท",
+                                                //       style: TextStyle(
+                                                //           color: darkGray),
+                                                //     ),
+                                                //   ],
+                                                // ),
                                               ],
                                             ),
                                           ),
@@ -302,8 +439,8 @@ class _SubOrderPageState extends State<SubOrderPage> {
                                               mainAxisAlignment:
                                                   MainAxisAlignment
                                                       .spaceBetween,
-                                              children: const [
-                                                Text(
+                                              children: [
+                                                const Text(
                                                   "รวมทั้งหมด",
                                                   style: TextStyle(
                                                     fontSize: 20,
@@ -311,8 +448,8 @@ class _SubOrderPageState extends State<SubOrderPage> {
                                                   ),
                                                 ),
                                                 Text(
-                                                  "900 บาท",
-                                                  style: TextStyle(
+                                                  "${widget.orderDetail.data.totalPrice} บาท",
+                                                  style: const TextStyle(
                                                     fontSize: 20,
                                                   ),
                                                 ),
@@ -358,42 +495,44 @@ class _SubOrderPageState extends State<SubOrderPage> {
   }
 }
 
-class MyData extends DataTableSource {
-  final List<Map<String, dynamic>> _data = List.generate(
-    200,
-    (index) => {
-      "product_name": "เบอร์เกอร์ $index",
-      "price": Random().nextInt(2000),
-      "quantity": Random().nextInt(10),
-      "sum": Random().nextInt(2000),
-    },
-  );
+// class MyData extends DataTableSource {
+//   // final List<Map<String, dynamic>> _data = List.generate(
+//   //   200,
+//   //   (index) => {
+//   //     "product_name": "เบอร์เกอร์ $index",
+//   //     "quantity": Random().nextInt(10),
+//   //     "sum": Random().nextInt(2000),
+//   //   },
+//   // );
+//   final OrderDetailModel data;
 
-  @override
-  DataRow? getRow(int index) {
-    return DataRow(
-      cells: [
-        DataCell(Text(_data[index]['product_name'])),
-        DataCell(Text(_data[index]['price'].toString())),
-        DataCell(Text(_data[index]['quantity'].toString())),
-        DataCell(Text(_data[index]['sum'].toString())),
-        DataCell(
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.delete_forever_rounded),
-            color: mainRed,
-          ),
-        ),
-      ],
-    );
-  }
+//   MyData({
+//     required this.data,
+//   });
 
-  @override
-  bool get isRowCountApproximate => true;
+//   @override
+//   DataRow? getRow(int index) {
+//     return DataRow(
+//       cells: [
+//         DataCell(Text(data.data.orderItems[0].name)),
+//         DataCell(Text(data.data.orderItems[0].quantity)),
+//         DataCell(
+//           IconButton(
+//             onPressed: () {},
+//             icon: const Icon(Icons.delete_forever_rounded),
+//             color: mainRed,
+//           ),
+//         ),
+//       ],
+//     );
+//   }
 
-  @override
-  int get rowCount => _data.length;
+//   @override
+//   bool get isRowCountApproximate => true;
 
-  @override
-  int get selectedRowCount => 0;
-}
+//   @override
+//   int get rowCount => data.data.orderItems.length;
+
+//   @override
+//   int get selectedRowCount => 0;
+// }

@@ -1,14 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:chaba_burger_app/models/order_model.dart';
-import 'package:chaba_burger_app/models/remote_service.dart';
 import 'package:chaba_burger_app/utils/color.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 
+import '../../models/order/order_model.dart';
 import 'sub_page/sub_order_page.dart';
 
 class OrderPage extends StatefulWidget {
@@ -19,11 +17,11 @@ class OrderPage extends StatefulWidget {
 }
 
 class _OrderPageState extends State<OrderPage> {
-  StreamController<OrderModel> _streamController = StreamController();
+  StreamController<OrderModel> streamController = StreamController();
 
   @override
   void dispose() {
-    _streamController.close();
+    streamController.close();
     super.dispose();
   }
 
@@ -44,8 +42,8 @@ class _OrderPageState extends State<OrderPage> {
 
     OrderModel orderModel = OrderModel.fromJson(databody);
 
-    if (!_streamController.isClosed) {
-      _streamController.sink.add(orderModel);
+    if (!streamController.isClosed) {
+      streamController.sink.add(orderModel);
     }
   }
 
@@ -54,7 +52,7 @@ class _OrderPageState extends State<OrderPage> {
     return Padding(
       padding: const EdgeInsets.all(15.0),
       child: StreamBuilder(
-        stream: _streamController.stream,
+        stream: streamController.stream,
         builder: (context, snapshot) {
           // if (snapshot.connectionState == ConnectionState.done) {
           //   if (snapshot.hasData) {
@@ -232,7 +230,9 @@ class _OrderPageState extends State<OrderPage> {
                             minVerticalPadding: 20,
                             onTap: () {
                               Get.to(
-                                () => const SubOrderPage(),
+                                () => SubOrderPage(
+                                  orderId: orderData[reverseIndex].id,
+                                ),
                                 transition: Transition.cupertino,
                               );
                             },
@@ -254,8 +254,8 @@ class _OrderPageState extends State<OrderPage> {
                               ),
                             ),
                             subtitle: Text(
-                              // orderData[index].orderItems.join(", "),
-                              orderData[reverseIndex].orderItems,
+                              orderData[reverseIndex].orderItems.join(", "),
+                              // orderData[reverseIndex].orderItems,
                               // jsonDecode(orderData[index].orderItems),
                               style: const TextStyle(
                                 color: lightMainColor,
@@ -306,7 +306,9 @@ class _OrderPageState extends State<OrderPage> {
                             minVerticalPadding: 20,
                             onTap: () {
                               Get.to(
-                                () => const SubOrderPage(),
+                                () => SubOrderPage(
+                                  orderId: orderData[reverseIndex].id,
+                                ),
                                 transition: Transition.cupertino,
                               );
                             },
@@ -322,8 +324,8 @@ class _OrderPageState extends State<OrderPage> {
                               ),
                             ),
                             subtitle: Text(
-                              // orderData[reverseIndex].orderItem.join(", "),
-                              orderData[reverseIndex].orderItems,
+                              orderData[reverseIndex].orderItems.join(", "),
+                              // orderData[reverseIndex].orderItems,
                               // jsonEncode(orderData[reverseIndex].orderItems),
                               style: const TextStyle(
                                 color: lightMainColor,
@@ -374,7 +376,9 @@ class _OrderPageState extends State<OrderPage> {
                             minVerticalPadding: 20,
                             onTap: () {
                               Get.to(
-                                () => const SubOrderPage(),
+                                () => SubOrderPage(
+                                  orderId: orderData[reverseIndex].id,
+                                ),
                                 transition: Transition.cupertino,
                               );
                             },
@@ -387,8 +391,8 @@ class _OrderPageState extends State<OrderPage> {
                               ),
                             ),
                             subtitle: Text(
-                              // orderData[reverseIndex].orderItems.join(", "),
-                              orderData[reverseIndex].orderItems,
+                              orderData[reverseIndex].orderItems.join(", "),
+                              // orderData[reverseIndex].orderItems,
                               style: const TextStyle(
                                 color: lightMainColor,
                                 fontWeight: FontWeight.bold,
@@ -436,7 +440,9 @@ class _OrderPageState extends State<OrderPage> {
                       minVerticalPadding: 20,
                       onTap: () {
                         Get.to(
-                          () => const SubOrderPage(),
+                          () => SubOrderPage(
+                            orderId: orderData[reverseIndex].id,
+                          ),
                           transition: Transition.cupertino,
                         );
                       },
@@ -449,8 +455,7 @@ class _OrderPageState extends State<OrderPage> {
                         ),
                       ),
                       subtitle: Text(
-                        // orderData[reverseIndex].orderItem.join(", "),
-                        orderData[reverseIndex].orderItems,
+                        orderData[reverseIndex].orderItems.join(", "),
                         style: const TextStyle(
                           color: lightMainColor,
                           fontWeight: FontWeight.bold,

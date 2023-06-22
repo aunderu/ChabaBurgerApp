@@ -1,7 +1,6 @@
 import 'dart:ui';
 
-import 'package:chaba_burger_app/models/category_model.dart';
-import 'package:chaba_burger_app/models/menu_select_item.dart';
+import 'package:chaba_burger_app/models/category/category_model.dart';
 import 'package:chaba_burger_app/models/remote_service.dart';
 import 'package:chaba_burger_app/utils/color.dart';
 import 'package:dotted_border/dotted_border.dart';
@@ -10,7 +9,8 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 
-import '../../models/menu_model.dart';
+import '../../models/menu/menu_model.dart';
+import '../../models/menu/menu_select_item.dart';
 import 'sub_page/sub_order_page.dart';
 
 class MenuPage extends StatefulWidget {
@@ -57,7 +57,8 @@ class _MenuPageState extends State<MenuPage> {
 
     for (var i = 0; i < selectedItems.length; i++) {
       request.fields.addAll({
-        'order_items[$i]': selectedItems[i].name,
+        'name[$i]': selectedItems[i].name,
+        'quantity[$i]': selectedItems[i].quantity.toString(),
       });
     }
 
@@ -493,7 +494,12 @@ class _MenuPageState extends State<MenuPage> {
                                       ),
                                       GestureDetector(
                                         onTap: () {
-                                          Get.to(() => const SubOrderPage());
+                                          // Get.to(
+                                          //   () => SubOrderPage(
+                                          //     orderId:
+                                          //         orderData[reverseIndex].id,
+                                          //   ),
+                                          // );
                                         },
                                         child: Container(
                                           height: 60,
