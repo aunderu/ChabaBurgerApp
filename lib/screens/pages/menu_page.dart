@@ -9,7 +9,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 
-import '../../models/menu/menu_model.dart';
+import '../../models/menu/menu_model.dart' as menuModel;
 import '../../models/menu/menu_select_item.dart';
 import 'sub_page/sub_order_page.dart';
 
@@ -85,7 +85,7 @@ class _MenuPageState extends State<MenuPage> {
               // menu
               Expanded(
                 flex: 8,
-                child: FutureBuilder<MenuModel?>(
+                child: FutureBuilder<menuModel.MenuModel?>(
                   future: RemoteService().getMenuModel(),
                   builder: (context, snapshot) {
                     switch (snapshot.connectionState) {
@@ -146,78 +146,201 @@ class _MenuPageState extends State<MenuPage> {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: FutureBuilder<List<CategoryModel>>(
-                        // future: categoryController.getAllCategory(),
+                      child: FutureBuilder<CategoryModel?>(
+                        future: RemoteService().getCategoryModel(),
                         builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.done) {
-                            if (snapshot.hasData) {
-                              var categoryData = snapshot.data;
-                              return ListView.builder(
-                                shrinkWrap: true,
-                                itemCount: categoryData!.length,
-                                physics: const BouncingScrollPhysics(),
-                                itemExtent: 150,
-                                scrollDirection: Axis.horizontal,
-                                itemBuilder: (context, index) {
-                                  return Column(
-                                    mainAxisSize: MainAxisSize.max,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          // setState(() {
-                                          //   widget.current = index;
-                                          // });
-                                        },
-                                        child: AnimatedContainer(
-                                          duration:
-                                              const Duration(milliseconds: 300),
-                                          margin: const EdgeInsets.all(5),
-                                          width: 200,
-                                          height: 70,
-                                          decoration: BoxDecoration(
-                                            // color: widget.current == index
-                                            //     ? mainGreen
-                                            //     : Colors.white,
-                                            color: index == 0
-                                                ? darkMainColor
-                                                : gray,
-                                            borderRadius:
-                                                BorderRadius.circular(20),
+                          switch (snapshot.connectionState) {
+                            case ConnectionState.none:
+                              return const SizedBox.shrink();
+                            case ConnectionState.waiting:
+                              if (snapshot.hasData) {
+                                var categoryData = snapshot.data!.data;
+                                return ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: categoryData.length,
+                                  physics: const BouncingScrollPhysics(),
+                                  itemExtent: 150,
+                                  scrollDirection: Axis.horizontal,
+                                  itemBuilder: (context, index) {
+                                    return Column(
+                                      mainAxisSize: MainAxisSize.max,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            // setState(() {
+                                            //   widget.current = index;
+                                            // });
+                                          },
+                                          child: AnimatedContainer(
+                                            duration: const Duration(
+                                                milliseconds: 300),
+                                            margin: const EdgeInsets.all(5),
+                                            width: 200,
+                                            height: 70,
+                                            decoration: BoxDecoration(
+                                              // color: widget.current == index
+                                              //     ? mainGreen
+                                              //     : Colors.white,
+                                              color: index == 0
+                                                  ? darkMainColor
+                                                  : gray,
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            alignment:
+                                                const AlignmentDirectional(
+                                                    0, 0),
+                                            child: Text(
+                                              categoryData[index].name,
+                                              style: const TextStyle(
+                                                // color: widget.current == index
+                                                //     ? Colors.white
+                                                //     : Colors.black,
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 20,
+                                              ),
+                                            ),
                                           ),
-                                          alignment:
-                                              const AlignmentDirectional(0, 0),
-                                          // child: Text(
-                                          //   categoryData[index].name,
-                                          //   style: const TextStyle(
-                                          //     // color: widget.current == index
-                                          //     //     ? Colors.white
-                                          //     //     : Colors.black,
-                                          //     color: Colors.white,
-                                          //     fontWeight: FontWeight.bold,
-                                          //     fontSize: 20,
-                                          //   ),
-                                          // ),
                                         ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            } else if (snapshot.hasError) {
-                              return Center(
-                                child: Text(snapshot.error.toString()),
-                              );
-                            } else {
-                              return const Center(
-                                child: Text('ดูเหมือนมีบางอย่างผิดปกติ..'),
-                              );
-                            }
-                          } else {
-                            return const SizedBox.shrink();
+                                      ],
+                                    );
+                                  },
+                                );
+                              } else {
+                                return const SizedBox.shrink();
+                              }
+                            case ConnectionState.active:
+                              if (snapshot.hasData) {
+                                var categoryData = snapshot.data!.data;
+                                return ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: categoryData.length,
+                                  physics: const BouncingScrollPhysics(),
+                                  itemExtent: 150,
+                                  scrollDirection: Axis.horizontal,
+                                  itemBuilder: (context, index) {
+                                    return Column(
+                                      mainAxisSize: MainAxisSize.max,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            // setState(() {
+                                            //   widget.current = index;
+                                            // });
+                                          },
+                                          child: AnimatedContainer(
+                                            duration: const Duration(
+                                                milliseconds: 300),
+                                            margin: const EdgeInsets.all(5),
+                                            width: 200,
+                                            height: 70,
+                                            decoration: BoxDecoration(
+                                              // color: widget.current == index
+                                              //     ? mainGreen
+                                              //     : Colors.white,
+                                              color: index == 0
+                                                  ? darkMainColor
+                                                  : gray,
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            alignment:
+                                                const AlignmentDirectional(
+                                                    0, 0),
+                                            child: Text(
+                                              categoryData[index].name,
+                                              style: const TextStyle(
+                                                // color: widget.current == index
+                                                //     ? Colors.white
+                                                //     : Colors.black,
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 20,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              } else {
+                                return const SizedBox.shrink();
+                              }
+                            case ConnectionState.done:
+                              if (snapshot.hasError) {
+                                return const Center(
+                                    child: Text("ดูเหมือนมีอะไรผิดปกติ.."));
+                              } else if (snapshot.hasData) {
+                                var categoryData = snapshot.data!.data;
+                                return ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: categoryData.length,
+                                  physics: const BouncingScrollPhysics(),
+                                  itemExtent: 150,
+                                  scrollDirection: Axis.horizontal,
+                                  itemBuilder: (context, index) {
+                                    return Column(
+                                      mainAxisSize: MainAxisSize.max,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            // setState(() {
+                                            //   widget.current = index;
+                                            // });
+                                          },
+                                          child: AnimatedContainer(
+                                            duration: const Duration(
+                                                milliseconds: 300),
+                                            margin: const EdgeInsets.all(5),
+                                            width: 200,
+                                            height: 70,
+                                            decoration: BoxDecoration(
+                                              // color: widget.current == index
+                                              //     ? mainGreen
+                                              //     : Colors.white,
+                                              color: index == 0
+                                                  ? darkMainColor
+                                                  : gray,
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            alignment:
+                                                const AlignmentDirectional(
+                                                    0, 0),
+                                            child: Text(
+                                              categoryData[index].name,
+                                              style: const TextStyle(
+                                                // color: widget.current == index
+                                                //     ? Colors.white
+                                                //     : Colors.black,
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 20,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              } else {
+                                return const SizedBox.shrink();
+                              }
                           }
                         },
                       ),
@@ -538,7 +661,7 @@ class _MenuPageState extends State<MenuPage> {
     );
   }
 
-  Widget menuItemWidget(List<Datum> data) {
+  Widget menuItemWidget(List<menuModel.Datum> data) {
     return GridView.builder(
       itemCount: 2,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(

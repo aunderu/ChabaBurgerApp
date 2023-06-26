@@ -1,8 +1,9 @@
+import 'package:chaba_burger_app/models/remote_service.dart';
 import 'package:chaba_burger_app/utils/color.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../models/category/category_model.dart';
+import '../../models/category/category_model.dart' as categoryModel;
 
 class AddCategoryPage extends StatefulWidget {
   const AddCategoryPage({super.key});
@@ -159,22 +160,48 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
           Expanded(
             child: SizedBox(
               width: double.infinity,
-              child: FutureBuilder<List<CategoryModel>>(
-                // future: categoryController.getAllCategory(),
+              child: FutureBuilder<categoryModel.CategoryModel?>(
+                future: RemoteService().getCategoryModel(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
                     if (snapshot.hasData) {
-                      var categoryData = snapshot.data;
-                      final DataTableSource allUsers =
-                          CategoryData(categoryData as List<CategoryModel>);
-                      return PaginatedDataTable(
-                        showFirstLastButtons: true,
+                      var categoryData = snapshot.data!.data;
+                      // final DataTableSource allItem =
+                      //     CategoryData(categoryData.cast<categoryModel.CategoryModel>());
+                      return DataTable(
                         columnSpacing: MediaQuery.of(context).size.width * 0.65,
                         columns: const [
                           DataColumn(label: Text("รายการ")),
                           DataColumn(label: Text("ตัวเลือก")),
                         ],
-                        source: allUsers,
+                        rows: categoryData
+                            .map(
+                              (data) => DataRow(cells: [
+                                DataCell(Text(data.name)),
+                                DataCell(
+                                  Row(
+                                    children: [
+                                      IconButton(
+                                        onPressed: () {
+                                          // print("edit $index");
+                                        },
+                                        icon: const Icon(Icons.edit_rounded),
+                                        color: Colors.amber,
+                                      ),
+                                      IconButton(
+                                        onPressed: () {
+                                          // print("deleted $index");
+                                        },
+                                        icon: const Icon(
+                                            Icons.delete_forever_rounded),
+                                        color: mainRed,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ]),
+                            )
+                            .toList(),
                       );
                     } else if (snapshot.hasError) {
                       return Center(
@@ -200,48 +227,4 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
       ),
     );
   }
-}
-
-class CategoryData extends DataTableSource {
-  final List<CategoryModel> category;
-
-  CategoryData(this.category);
-
-  @override
-  DataRow getRow(int index) {
-    return DataRow(
-      cells: [
-        // DataCell(Text(category[index].name)),
-        DataCell(
-          Row(
-            children: [
-              IconButton(
-                onPressed: () {
-                  // print("edit $index");
-                },
-                icon: const Icon(Icons.edit_rounded),
-                color: Colors.amber,
-              ),
-              IconButton(
-                onPressed: () {
-                  // print("deleted $index");
-                },
-                icon: const Icon(Icons.delete_forever_rounded),
-                color: mainRed,
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  @override
-  bool get isRowCountApproximate => false;
-
-  @override
-  int get rowCount => category.length;
-
-  @override
-  int get selectedRowCount => 0;
 }
