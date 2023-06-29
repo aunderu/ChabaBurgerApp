@@ -202,6 +202,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         columns: const [
                           DataColumn(label: Text('รายการ')),
                           DataColumn(label: Text('จำนวน')),
+                          DataColumn(label: Text('ราคา')),
                           DataColumn(label: Text('ตัวเลือก')),
                         ],
                         rows: widget.orderDetail.data.orderItems
@@ -209,6 +210,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               (data) => DataRow(cells: [
                                 DataCell(Text(data.name)),
                                 DataCell(Text(data.quantity)),
+                                DataCell(Text(
+                                    data.price == null ? "0" : data.price!)),
                                 DataCell(
                                   IconButton(
                                     onPressed: () {},

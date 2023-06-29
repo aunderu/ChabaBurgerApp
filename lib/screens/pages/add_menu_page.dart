@@ -29,24 +29,15 @@ class _AddMenuPageState extends State<AddMenuPage> {
     "อื่น ๆ",
   ];
 
-  TextEditingController? nameController;
-  TextEditingController? priceController;
-  TextEditingController? salePriceController;
-
-  @override
-  void initState() {
-    super.initState();
-
-    nameController = TextEditingController();
-    priceController = TextEditingController();
-    salePriceController = TextEditingController();
-  }
+  TextEditingController nameController = TextEditingController();
+  TextEditingController priceController = TextEditingController();
+  TextEditingController salePriceController = TextEditingController();
 
   @override
   void dispose() {
-    nameController?.dispose();
-    priceController?.dispose();
-    salePriceController?.dispose();
+    nameController.dispose();
+    priceController.dispose();
+    salePriceController.dispose();
     super.dispose();
   }
 
@@ -108,23 +99,6 @@ class _AddMenuPageState extends State<AddMenuPage> {
             child: FutureBuilder<menuModel.MenuModel?>(
               future: RemoteService().getMenuModel(),
               builder: (context, snapshot) {
-                // if (snapshot.connectionState == ConnectionState.done) {
-                //   if (snapshot.hasData) {
-                //     var menuData = snapshot.data;
-                //   } else if (snapshot.hasError) {
-                //     return Center(
-                //       child: Text(snapshot.error.toString()),
-                //     );
-                //   } else {
-                //     return const Center(
-                //       child: Text('ดูเหมือนมีบางอย่างผิดปกติ..'),
-                //     );
-                //   }
-                // } else {
-                //   return const Center(
-                //     child: CircularProgressIndicator(),
-                //   );
-                // }
                 switch (snapshot.connectionState) {
                   case ConnectionState.none:
                     return const CircularProgressIndicator();
@@ -453,53 +427,29 @@ class _AddMenuPageState extends State<AddMenuPage> {
                                       },
                                     ),
                                     const SizedBox(height: 10),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        SizedBox(
-                                          width: MediaQuery.of(context)
-                                                  .size
-                                                  .width *
-                                              0.2,
-                                          child: TextFormField(
-                                            controller: priceController,
-                                            decoration: const InputDecoration(
-                                              labelText: 'ราคาตั้ง',
-                                              suffix: Text('บาท'),
-                                            ),
-                                            keyboardType: TextInputType.number,
-                                            validator: (value) {
-                                              if (value == null ||
-                                                  value.isEmpty) {
-                                                return 'กรุณาใส่ราคาตั้ง';
-                                              }
-                                              return null;
-                                            },
+                                    Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.2,
+                                        child: TextFormField(
+                                          controller: salePriceController,
+                                          decoration: const InputDecoration(
+                                            labelText: 'ราคาขาย',
+                                            suffix: Text('บาท'),
                                           ),
+
+                                          keyboardType: TextInputType.number,
+                                          validator: (value) {
+                                            if (value == null ||
+                                                value.isEmpty) {
+                                              return 'กรุณาใส่ราคาขาย';
+                                            }
+                                            return null;
+                                          },
                                         ),
-                                        SizedBox(
-                                          width: MediaQuery.of(context)
-                                                  .size
-                                                  .width *
-                                              0.2,
-                                          child: TextFormField(
-                                            controller: salePriceController,
-                                            decoration: const InputDecoration(
-                                              labelText: 'ราคาขาย',
-                                              suffix: Text('บาท'),
-                                            ),
-                                            keyboardType: TextInputType.number,
-                                            validator: (value) {
-                                              if (value == null ||
-                                                  value.isEmpty) {
-                                                return 'กรุณาใส่ราคาขาย';
-                                              }
-                                              return null;
-                                            },
-                                          ),
-                                        ),
-                                      ],
+                                      ),
                                     ),
                                     const SizedBox(height: 10),
                                     const Divider(

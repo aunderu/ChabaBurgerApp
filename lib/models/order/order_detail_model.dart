@@ -75,19 +75,23 @@ class Data {
 class OrderItem {
     String name;
     String quantity;
+    String? price;
 
     OrderItem({
         required this.name,
         required this.quantity,
+        this.price,
     });
 
     factory OrderItem.fromJson(Map<String, dynamic> json) => OrderItem(
         name: json["name"],
         quantity: json["quantity"],
+        price: json["price"],
     );
 
     Map<String, dynamic> toJson() => {
         "name": name,
         "quantity": quantity,
+        "price": price,
     };
 }

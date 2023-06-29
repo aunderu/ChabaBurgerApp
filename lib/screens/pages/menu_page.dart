@@ -59,6 +59,7 @@ class _MenuPageState extends State<MenuPage> {
       request.fields.addAll({
         'name[$i]': selectedItems[i].name,
         'quantity[$i]': selectedItems[i].quantity.toString(),
+        'price[$i]': selectedItems[i].price.toString(),
       });
     }
 
