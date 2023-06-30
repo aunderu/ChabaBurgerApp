@@ -130,6 +130,8 @@ class OrderDetailScreen extends StatefulWidget {
 }
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
+  bool isQRcode = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -190,13 +192,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   flex: 8,
                   child: SizedBox(
                     width: double.infinity,
-                    // child: PaginatedDataTable(
-                    //   columns: const [
-                    //     DataColumn(label: Text("รายการ")),
-                    //     DataColumn(label: Text("จำนวน")),
-                    //     DataColumn(label: Text("")),
-                    //   ],
-                    // ),
                     child: SingleChildScrollView(
                       child: DataTable(
                         columns: const [
@@ -267,11 +262,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     flex: 2,
                     child: Column(
                       children: [
-                        const Align(
+                        Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            "วิธีการชำระ : เงินสด",
-                            style: TextStyle(
+                            "วิธีการชำระ : ${isQRcode ? "QRCode" : "เงินสด"}",
+                            style: const TextStyle(
                               // fontWeight: FontWeight.bold,
                               fontSize: 20,
                             ),
@@ -282,42 +277,64 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            Container(
-                              height: 80,
-                              width: 130,
-                              decoration: BoxDecoration(
-                                color: mainColor,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.money_rounded,
-                                    color: Colors.black45,
-                                  ),
-                                  Text("เงินสด"),
-                                ],
+                            InkWell(
+                              onTap: () {
+                                if (isQRcode == true) {
+                                  setState(() {
+                                    isQRcode = !isQRcode;
+                                  });
+                                }
+                              },
+                              borderRadius: BorderRadius.circular(20),
+                              child: Ink(
+                                height: 80,
+                                width: 130,
+                                decoration: BoxDecoration(
+                                  color:
+                                      isQRcode == false ? mainColor : lightGrey,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.money_rounded,
+                                      color: Colors.black45,
+                                    ),
+                                    Text("เงินสด"),
+                                  ],
+                                ),
                               ),
                             ),
-                            Container(
-                              height: 80,
-                              width: 130,
-                              decoration: BoxDecoration(
-                                color: lightGrey,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.qr_code_2_rounded,
-                                    color: Colors.black45,
-                                  ),
-                                  Text("QRCode"),
-                                ],
+                            InkWell(
+                              onTap: () {
+                                if (isQRcode == false) {
+                                  setState(() {
+                                    isQRcode = !isQRcode;
+                                  });
+                                }
+                              },
+                              borderRadius: BorderRadius.circular(20),
+                              child: Ink(
+                                height: 80,
+                                width: 130,
+                                decoration: BoxDecoration(
+                                  color:
+                                      isQRcode == true ? mainColor : lightGrey,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.qr_code_2_rounded,
+                                      color: Colors.black45,
+                                    ),
+                                    Text("QRCode"),
+                                  ],
+                                ),
                               ),
                             ),
                           ],
@@ -334,43 +351,43 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           flex: 8,
                           child: Column(
                             children: [
-                              const Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  "วิธีการชำระ : เงินสด",
-                                  style: TextStyle(
-                                    // fontWeight: FontWeight.bold,
-                                    fontSize: 20,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              Container(
-                                width: double.infinity,
-                                height: 30,
-                                decoration: BoxDecoration(
-                                  color: lightGrey,
-                                  border: Border.all(color: darkGray),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: const Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 15),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          "ส่วนลด 10%",
-                                          style: TextStyle(color: darkGray),
-                                        ),
-                                      ),
-                                      Icon(
-                                        Icons.arrow_drop_down_rounded,
-                                        color: darkGray,
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              ),
+                              // const Align(
+                              //   alignment: Alignment.centerLeft,
+                              //   child: Text(
+                              //     "วิธีการชำระ : เงินสด",
+                              //     style: TextStyle(
+                              //       // fontWeight: FontWeight.bold,
+                              //       fontSize: 20,
+                              //     ),
+                              //   ),
+                              // ),
+                              // const SizedBox(height: 10),
+                              // Container(
+                              //   width: double.infinity,
+                              //   height: 30,
+                              //   decoration: BoxDecoration(
+                              //     color: lightGrey,
+                              //     border: Border.all(color: darkGray),
+                              //     borderRadius: BorderRadius.circular(20),
+                              //   ),
+                              //   child: const Padding(
+                              //     padding: EdgeInsets.symmetric(horizontal: 15),
+                              //     child: Row(
+                              //       children: [
+                              //         Expanded(
+                              //           child: Text(
+                              //             "ส่วนลด 10%",
+                              //             style: TextStyle(color: darkGray),
+                              //           ),
+                              //         ),
+                              //         Icon(
+                              //           Icons.arrow_drop_down_rounded,
+                              //           color: darkGray,
+                              //         )
+                              //       ],
+                              //     ),
+                              //   ),
+                              // ),
                               const SizedBox(height: 10),
                               Expanded(
                                 child: DottedBorder(
@@ -394,6 +411,36 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                         children: [
                                           Expanded(
                                             flex: 7,
+                                            child: ListView.builder(
+                                              itemCount: widget.orderDetail.data
+                                                  .orderItems.length,
+                                              itemBuilder: (context, index) {
+                                                return Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Text(
+                                                      widget
+                                                          .orderDetail
+                                                          .data
+                                                          .orderItems[index]
+                                                          .name,
+                                                      style: const TextStyle(
+                                                          color: darkGray),
+                                                    ),
+                                                    Text(
+                                                      "${widget.orderDetail.data.orderItems[index].quantity} x ${widget.orderDetail.data.orderItems[index].price} บาท",
+                                                      style: const TextStyle(
+                                                          color: darkGray),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                          const SizedBox(height: 5),
+                                          Expanded(
                                             child: Column(
                                               children: [
                                                 Row(
@@ -471,16 +518,24 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         ),
                         Expanded(
                           flex: 2,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.green[100],
-                              borderRadius: BorderRadius.circular(25),
-                            ),
-                            width: double.infinity,
-                            child: const Center(
-                              child: Text(
-                                "ชำระเงิน",
-                                style: TextStyle(fontSize: 25),
+                          child: InkWell(
+                            onTap: () {
+                              if (isQRcode == false) {
+                                showNumberPadDialog(context);
+                              } else {}
+                            },
+                            borderRadius: BorderRadius.circular(25),
+                            child: Ink(
+                              decoration: BoxDecoration(
+                                color: Colors.green[100],
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                              width: double.infinity,
+                              child: const Center(
+                                child: Text(
+                                  "ชำระเงิน",
+                                  style: TextStyle(fontSize: 25),
+                                ),
                               ),
                             ),
                           ),
@@ -498,44 +553,198 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 }
 
-// class MyData extends DataTableSource {
-//   // final List<Map<String, dynamic>> _data = List.generate(
-//   //   200,
-//   //   (index) => {
-//   //     "product_name": "เบอร์เกอร์ $index",
-//   //     "quantity": Random().nextInt(10),
-//   //     "sum": Random().nextInt(2000),
-//   //   },
-//   // );
-//   final OrderDetailModel data;
+class NumberPadDialog extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ButtonBarTheme(
+      data: const ButtonBarThemeData(
+        alignment: MainAxisAlignment.center,
+      ),
+      child: AlertDialog(
+        title: const Text(
+          'รับเงินสด',
+          style: TextStyle(fontSize: 35),
+          textAlign: TextAlign.center,
+        ),
+        content: SizedBox(
+          width: MediaQuery.of(context).size.width * 0.5,
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: NumberPadWidget(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            child: const Text('Close'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
 
-//   MyData({
-//     required this.data,
-//   });
+class NumberPadWidget extends StatefulWidget {
+  @override
+  _NumberPadWidgetState createState() => _NumberPadWidgetState();
+}
 
-//   @override
-//   DataRow? getRow(int index) {
-//     return DataRow(
-//       cells: [
-//         DataCell(Text(data.data.orderItems[0].name)),
-//         DataCell(Text(data.data.orderItems[0].quantity)),
-//         DataCell(
-//           IconButton(
-//             onPressed: () {},
-//             icon: const Icon(Icons.delete_forever_rounded),
-//             color: mainRed,
-//           ),
-//         ),
-//       ],
-//     );
-//   }
+class _NumberPadWidgetState extends State<NumberPadWidget> {
+  String _cash = '';
+  int _currentPageIndex = 0;
+  PageController _pageController = PageController(initialPage: 0);
 
-//   @override
-//   bool get isRowCountApproximate => true;
+  void _addDigit(String digit) {
+    setState(() {
+      _cash += digit;
+    });
+  }
 
-//   @override
-//   int get rowCount => data.data.orderItems.length;
+  void _removeDigit() {
+    setState(() {
+      if (_cash.isNotEmpty) {
+        _cash = _cash.substring(0, _cash.length - 1);
+      }
+    });
+  }
 
-//   @override
-//   int get selectedRowCount => 0;
-// }
+  @override
+  Widget build(BuildContext context) {
+    return PageView(
+      controller: _pageController,
+      physics: const NeverScrollableScrollPhysics(),
+      children: [
+        Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              _cash,
+              style: const TextStyle(fontSize: 35),
+            ),
+            const SizedBox(height: 150),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                NumberButton(
+                  digit: '1',
+                  onPressed: () => _addDigit('1'),
+                ),
+                SizedBox(width: MediaQuery.of(context).size.width * 0.05),
+                NumberButton(
+                  digit: '2',
+                  onPressed: () => _addDigit('2'),
+                ),
+                SizedBox(width: MediaQuery.of(context).size.width * 0.05),
+                NumberButton(
+                  digit: '3',
+                  onPressed: () => _addDigit('3'),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                NumberButton(
+                  digit: '4',
+                  onPressed: () => _addDigit('4'),
+                ),
+                SizedBox(width: MediaQuery.of(context).size.width * 0.05),
+                NumberButton(
+                  digit: '5',
+                  onPressed: () => _addDigit('5'),
+                ),
+                SizedBox(width: MediaQuery.of(context).size.width * 0.05),
+                NumberButton(
+                  digit: '6',
+                  onPressed: () => _addDigit('6'),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                NumberButton(
+                  digit: '7',
+                  onPressed: () => _addDigit('7'),
+                ),
+                SizedBox(width: MediaQuery.of(context).size.width * 0.05),
+                NumberButton(
+                  digit: '8',
+                  onPressed: () => _addDigit('8'),
+                ),
+                SizedBox(width: MediaQuery.of(context).size.width * 0.05),
+                NumberButton(
+                  digit: '9',
+                  onPressed: () => _addDigit('9'),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  icon: Icon(
+                    Icons.check_box_rounded,
+                    size: 50,
+                    color: Colors.green,
+                  ),
+                  onPressed: () => _pageController.nextPage(
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.easeInOut,
+                  ),
+                ),
+                SizedBox(width: MediaQuery.of(context).size.width * 0.05),
+                NumberButton(
+                  digit: '0',
+                  onPressed: () => _addDigit('0'),
+                ),
+                SizedBox(width: MediaQuery.of(context).size.width * 0.05),
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  icon: const Icon(
+                    Icons.backspace,
+                    size: 50,
+                    color: Colors.red,
+                  ),
+                  onPressed: _removeDigit,
+                ),
+              ],
+            ),
+          ],
+        ),
+        Text("test Next Page This is Page 2!!"),
+      ],
+    );
+  }
+}
+
+class NumberButton extends StatelessWidget {
+  final String digit;
+  final VoidCallback onPressed;
+
+  const NumberButton({super.key, required this.digit, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: onPressed,
+      child: Text(
+        digit,
+        style: const TextStyle(fontSize: 50),
+      ),
+    );
+  }
+}
+
+// Example usage
+void showNumberPadDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return NumberPadDialog();
+    },
+  );
+}
