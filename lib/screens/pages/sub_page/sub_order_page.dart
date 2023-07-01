@@ -521,7 +521,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           child: InkWell(
                             onTap: () {
                               if (isQRcode == false) {
-                                showNumberPadDialog(context);
+                                showNumberPadDialog(
+                                    context, widget.orderDetail.data);
                               } else {}
                             },
                             borderRadius: BorderRadius.circular(25),
@@ -553,7 +554,20 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 }
 
+void showNumberPadDialog(BuildContext context, Data data) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return NumberPadDialog(dataOrder: data);
+    },
+  );
+}
+
 class NumberPadDialog extends StatelessWidget {
+  final Data dataOrder;
+
+  const NumberPadDialog({super.key, required this.dataOrder});
+
   @override
   Widget build(BuildContext context) {
     return ButtonBarTheme(
@@ -570,7 +584,7 @@ class NumberPadDialog extends StatelessWidget {
           width: MediaQuery.of(context).size.width * 0.5,
           child: Align(
             alignment: Alignment.bottomCenter,
-            child: NumberPadWidget(),
+            child: NumberPadWidget(data: dataOrder),
           ),
         ),
         actions: [
@@ -587,25 +601,29 @@ class NumberPadDialog extends StatelessWidget {
 }
 
 class NumberPadWidget extends StatefulWidget {
+  final Data data;
+
+  const NumberPadWidget({super.key, required this.data});
+
   @override
   _NumberPadWidgetState createState() => _NumberPadWidgetState();
 }
 
 class _NumberPadWidgetState extends State<NumberPadWidget> {
-  String _cash = '';
-  int _currentPageIndex = 0;
+  final TextEditingController _myController = TextEditingController();
   PageController _pageController = PageController(initialPage: 0);
 
-  void _addDigit(String digit) {
+  void _addDigit(int digit) {
     setState(() {
-      _cash += digit;
+      _myController.text += digit.toString();
     });
   }
 
   void _removeDigit() {
     setState(() {
-      if (_cash.isNotEmpty) {
-        _cash = _cash.substring(0, _cash.length - 1);
+      if (_myController.text.isNotEmpty) {
+        _myController.text =
+            _myController.text.substring(0, _myController.text.length - 1);
       }
     });
   }
@@ -619,8 +637,11 @@ class _NumberPadWidgetState extends State<NumberPadWidget> {
         Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Text(
-              _cash,
+            TextField(
+              controller: _myController,
+              textAlign: TextAlign.center,
+              showCursor: false,
+              keyboardType: TextInputType.none,
               style: const TextStyle(fontSize: 35),
             ),
             const SizedBox(height: 150),
@@ -629,17 +650,17 @@ class _NumberPadWidgetState extends State<NumberPadWidget> {
               children: [
                 NumberButton(
                   digit: '1',
-                  onPressed: () => _addDigit('1'),
+                  onPressed: () => _addDigit(1),
                 ),
                 SizedBox(width: MediaQuery.of(context).size.width * 0.05),
                 NumberButton(
                   digit: '2',
-                  onPressed: () => _addDigit('2'),
+                  onPressed: () => _addDigit(2),
                 ),
                 SizedBox(width: MediaQuery.of(context).size.width * 0.05),
                 NumberButton(
                   digit: '3',
-                  onPressed: () => _addDigit('3'),
+                  onPressed: () => _addDigit(3),
                 ),
               ],
             ),
@@ -648,17 +669,17 @@ class _NumberPadWidgetState extends State<NumberPadWidget> {
               children: [
                 NumberButton(
                   digit: '4',
-                  onPressed: () => _addDigit('4'),
+                  onPressed: () => _addDigit(4),
                 ),
                 SizedBox(width: MediaQuery.of(context).size.width * 0.05),
                 NumberButton(
                   digit: '5',
-                  onPressed: () => _addDigit('5'),
+                  onPressed: () => _addDigit(5),
                 ),
                 SizedBox(width: MediaQuery.of(context).size.width * 0.05),
                 NumberButton(
                   digit: '6',
-                  onPressed: () => _addDigit('6'),
+                  onPressed: () => _addDigit(6),
                 ),
               ],
             ),
@@ -667,17 +688,17 @@ class _NumberPadWidgetState extends State<NumberPadWidget> {
               children: [
                 NumberButton(
                   digit: '7',
-                  onPressed: () => _addDigit('7'),
+                  onPressed: () => _addDigit(7),
                 ),
                 SizedBox(width: MediaQuery.of(context).size.width * 0.05),
                 NumberButton(
                   digit: '8',
-                  onPressed: () => _addDigit('8'),
+                  onPressed: () => _addDigit(8),
                 ),
                 SizedBox(width: MediaQuery.of(context).size.width * 0.05),
                 NumberButton(
                   digit: '9',
-                  onPressed: () => _addDigit('9'),
+                  onPressed: () => _addDigit(9),
                 ),
               ],
             ),
@@ -686,20 +707,24 @@ class _NumberPadWidgetState extends State<NumberPadWidget> {
               children: [
                 IconButton(
                   padding: EdgeInsets.zero,
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.check_box_rounded,
                     size: 50,
                     color: Colors.green,
                   ),
-                  onPressed: () => _pageController.nextPage(
-                    duration: const Duration(milliseconds: 500),
-                    curve: Curves.easeInOut,
-                  ),
+                  onPressed: () {
+                    if (_myController.text.isNotEmpty) {
+                      _pageController.nextPage(
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.easeInOut,
+                      );
+                    }
+                  },
                 ),
                 SizedBox(width: MediaQuery.of(context).size.width * 0.05),
                 NumberButton(
                   digit: '0',
-                  onPressed: () => _addDigit('0'),
+                  onPressed: () => _addDigit(0),
                 ),
                 SizedBox(width: MediaQuery.of(context).size.width * 0.05),
                 IconButton(
@@ -715,7 +740,130 @@ class _NumberPadWidgetState extends State<NumberPadWidget> {
             ),
           ],
         ),
-        Text("test Next Page This is Page 2!!"),
+        Padding(
+          padding: const EdgeInsets.all(50.0),
+          child: Center(
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "รับเงินสด",
+                      style: TextStyle(
+                        fontSize: 20,
+                      ),
+                    ),
+                    Text(
+                      "${_myController.text} บาท",
+                      style: const TextStyle(
+                        fontSize: 20,
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "จำนวนที่ต้องชำระ",
+                      style: TextStyle(
+                        fontSize: 20,
+                      ),
+                    ),
+                    Text(
+                      "${widget.data.totalPrice} บาท",
+                      style: const TextStyle(
+                        fontSize: 20,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                const Divider(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "จำนวนเงินที่ต้องทอน",
+                      style: TextStyle(
+                        fontSize: 20,
+                      ),
+                    ),
+                    Text(
+                      "${int.parse(_myController.text.isEmpty ? "0" : _myController.text) - int.parse(widget.data.totalPrice)} บาท",
+                      style: const TextStyle(
+                        fontSize: 40,
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Material(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5.0)),
+                      child: InkWell(
+                        onTap: () {
+                          _pageController.previousPage(
+                            duration: const Duration(milliseconds: 500),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                        splashColor: Colors.blueGrey[100],
+                        child: Container(
+                          width: MediaQuery.of(context).size.width * 0.2,
+                          height: 75,
+                          padding: const EdgeInsets.all(25.0),
+                          decoration: BoxDecoration(
+                              color: Colors.transparent,
+                              borderRadius: BorderRadius.circular(5.0)),
+                          child: const Center(
+                            child: Text(
+                              'ย้อนกลับ',
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Material(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5.0)),
+                      child: InkWell(
+                        onTap: () {},
+                        splashColor: Colors.green[700],
+                        child: Ink(
+                          width: MediaQuery.of(context).size.width * 0.2,
+                          height: 75,
+                          padding: const EdgeInsets.all(25.0),
+                          decoration: BoxDecoration(
+                              color: Colors.green[100],
+                              borderRadius: BorderRadius.circular(5.0)),
+                          child: const Center(
+                            child: Text(
+                              'สำเร็จออเดอร์',
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -737,14 +885,4 @@ class NumberButton extends StatelessWidget {
       ),
     );
   }
-}
-
-// Example usage
-void showNumberPadDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return NumberPadDialog();
-    },
-  );
 }
