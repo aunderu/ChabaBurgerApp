@@ -11,6 +11,7 @@ import 'package:http/http.dart' as http;
 
 import '../../models/menu/menu_model.dart' as menuModel;
 import '../../models/menu/menu_select_item.dart';
+import '../screen_page.dart';
 import 'sub_page/sub_order_page.dart';
 
 class MenuPage extends StatefulWidget {
@@ -23,13 +24,15 @@ class MenuPage extends StatefulWidget {
 class _MenuPageState extends State<MenuPage> {
   List<MenuSelectItem> selectedItems = [];
   int _totalPrice = 0;
+  bool isOpenShop = false;
+  String? genOrderId;
 
   @override
   void initState() {
     super.initState();
   }
 
-  Future<bool> addOrder(String status, int totalPrice) async {
+  Future<bool> addOrder(String status, int totalPrice, String orderId) async {
     showDialog(
       context: context,
       builder: (context) {
@@ -50,7 +53,7 @@ class _MenuPageState extends State<MenuPage> {
         'POST', Uri.parse("https://chaba-pos.com/api/order/store"))
       ..headers.addAll(headers)
       ..fields.addAll({
-        'order_queue': "00001",
+        'order_queue': orderId,
         'status': status,
         'total_price': totalPrice.toString(),
       });
@@ -84,271 +87,308 @@ class _MenuPageState extends State<MenuPage> {
           child: Column(
             children: [
               // menu
-              Expanded(
-                flex: 8,
-                child: FutureBuilder<menuModel.MenuModel?>(
-                  future: RemoteService().getMenuModel(),
-                  builder: (context, snapshot) {
-                    switch (snapshot.connectionState) {
-                      case ConnectionState.none:
-                        return const CircularProgressIndicator();
-                      case ConnectionState.waiting:
-                        if (snapshot.hasData) {
-                          var data = snapshot.data!.data;
-                          return menuItemWidget(data);
-                        } else {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-                      case ConnectionState.active:
-                        if (snapshot.hasData) {
-                          var data = snapshot.data!.data;
-                          return menuItemWidget(data);
-                        } else {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-                      case ConnectionState.done:
-                        if (snapshot.hasError) {
-                          return const Center(
-                              child: Text("ดูเหมือนมีอะไรผิดปกติ.."));
-                        } else {
-                          if (snapshot.hasData) {
-                            var data = snapshot.data!.data;
-                            return menuItemWidget(data);
-                          } else if (snapshot.hasError) {
-                            return Center(
-                              child: Text(snapshot.error.toString()),
-                            );
-                          } else {
-                            return const Center(
-                              child: Text('ดูเหมือนมีบางอย่างผิดปกติ..'),
-                            );
-                          }
-                        }
-                    }
-                  },
-                ),
-              ),
-
-              // category of menu
-              Expanded(
-                flex: 2,
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Container(
-                    height: 30,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: mainColor,
-                      borderRadius: BorderRadius.circular(35),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: FutureBuilder<CategoryModel?>(
-                        future: RemoteService().getCategoryModel(),
+              isOpenShop
+                  ? Expanded(
+                      flex: 8,
+                      child: FutureBuilder<menuModel.MenuModel?>(
+                        future: RemoteService().getMenuModel(),
                         builder: (context, snapshot) {
                           switch (snapshot.connectionState) {
                             case ConnectionState.none:
-                              return const SizedBox.shrink();
+                              return const CircularProgressIndicator();
                             case ConnectionState.waiting:
                               if (snapshot.hasData) {
-                                var categoryData = snapshot.data!.data;
-                                return ListView.builder(
-                                  shrinkWrap: true,
-                                  itemCount: categoryData.length,
-                                  physics: const BouncingScrollPhysics(),
-                                  itemExtent: 150,
-                                  scrollDirection: Axis.horizontal,
-                                  itemBuilder: (context, index) {
-                                    return Column(
-                                      mainAxisSize: MainAxisSize.max,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        GestureDetector(
-                                          onTap: () {
-                                            // setState(() {
-                                            //   widget.current = index;
-                                            // });
-                                          },
-                                          child: AnimatedContainer(
-                                            duration: const Duration(
-                                                milliseconds: 300),
-                                            margin: const EdgeInsets.all(5),
-                                            width: 200,
-                                            height: 70,
-                                            decoration: BoxDecoration(
-                                              // color: widget.current == index
-                                              //     ? mainGreen
-                                              //     : Colors.white,
-                                              color: index == 0
-                                                  ? darkMainColor
-                                                  : gray,
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
-                                            ),
-                                            alignment:
-                                                const AlignmentDirectional(
-                                                    0, 0),
-                                            child: Text(
-                                              categoryData[index].name,
-                                              style: const TextStyle(
-                                                // color: widget.current == index
-                                                //     ? Colors.white
-                                                //     : Colors.black,
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 20,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
+                                var data = snapshot.data!.data;
+                                return menuItemWidget(data);
                               } else {
-                                return const SizedBox.shrink();
+                                return const Center(
+                                  child: CircularProgressIndicator(),
+                                );
                               }
                             case ConnectionState.active:
                               if (snapshot.hasData) {
-                                var categoryData = snapshot.data!.data;
-                                return ListView.builder(
-                                  shrinkWrap: true,
-                                  itemCount: categoryData.length,
-                                  physics: const BouncingScrollPhysics(),
-                                  itemExtent: 150,
-                                  scrollDirection: Axis.horizontal,
-                                  itemBuilder: (context, index) {
-                                    return Column(
-                                      mainAxisSize: MainAxisSize.max,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        GestureDetector(
-                                          onTap: () {
-                                            // setState(() {
-                                            //   widget.current = index;
-                                            // });
-                                          },
-                                          child: AnimatedContainer(
-                                            duration: const Duration(
-                                                milliseconds: 300),
-                                            margin: const EdgeInsets.all(5),
-                                            width: 200,
-                                            height: 70,
-                                            decoration: BoxDecoration(
-                                              // color: widget.current == index
-                                              //     ? mainGreen
-                                              //     : Colors.white,
-                                              color: index == 0
-                                                  ? darkMainColor
-                                                  : gray,
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
-                                            ),
-                                            alignment:
-                                                const AlignmentDirectional(
-                                                    0, 0),
-                                            child: Text(
-                                              categoryData[index].name,
-                                              style: const TextStyle(
-                                                // color: widget.current == index
-                                                //     ? Colors.white
-                                                //     : Colors.black,
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 20,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
+                                var data = snapshot.data!.data;
+                                return menuItemWidget(data);
                               } else {
-                                return const SizedBox.shrink();
+                                return const Center(
+                                  child: CircularProgressIndicator(),
+                                );
                               }
                             case ConnectionState.done:
                               if (snapshot.hasError) {
                                 return const Center(
                                     child: Text("ดูเหมือนมีอะไรผิดปกติ.."));
-                              } else if (snapshot.hasData) {
-                                var categoryData = snapshot.data!.data;
-                                return ListView.builder(
-                                  shrinkWrap: true,
-                                  itemCount: categoryData.length,
-                                  physics: const BouncingScrollPhysics(),
-                                  itemExtent: 150,
-                                  scrollDirection: Axis.horizontal,
-                                  itemBuilder: (context, index) {
-                                    return Column(
-                                      mainAxisSize: MainAxisSize.max,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        GestureDetector(
-                                          onTap: () {
-                                            // setState(() {
-                                            //   widget.current = index;
-                                            // });
-                                          },
-                                          child: AnimatedContainer(
-                                            duration: const Duration(
-                                                milliseconds: 300),
-                                            margin: const EdgeInsets.all(5),
-                                            width: 200,
-                                            height: 70,
-                                            decoration: BoxDecoration(
-                                              // color: widget.current == index
-                                              //     ? mainGreen
-                                              //     : Colors.white,
-                                              color: index == 0
-                                                  ? darkMainColor
-                                                  : gray,
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
-                                            ),
-                                            alignment:
-                                                const AlignmentDirectional(
-                                                    0, 0),
-                                            child: Text(
-                                              categoryData[index].name,
-                                              style: const TextStyle(
-                                                // color: widget.current == index
-                                                //     ? Colors.white
-                                                //     : Colors.black,
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 20,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
                               } else {
-                                return const SizedBox.shrink();
+                                if (snapshot.hasData) {
+                                  var data = snapshot.data!.data;
+                                  return menuItemWidget(data);
+                                } else if (snapshot.hasError) {
+                                  return Center(
+                                    child: Text(snapshot.error.toString()),
+                                  );
+                                } else {
+                                  return const Center(
+                                    child: Text('ดูเหมือนมีบางอย่างผิดปกติ..'),
+                                  );
+                                }
                               }
                           }
                         },
                       ),
+                    )
+                  : const SizedBox.shrink(),
+
+              // category of menu
+              isOpenShop
+                  ? Expanded(
+                      flex: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Container(
+                          height: 30,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: mainColor,
+                            borderRadius: BorderRadius.circular(35),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: FutureBuilder<CategoryModel?>(
+                              future: RemoteService().getCategoryModel(),
+                              builder: (context, snapshot) {
+                                switch (snapshot.connectionState) {
+                                  case ConnectionState.none:
+                                    return const SizedBox.shrink();
+                                  case ConnectionState.waiting:
+                                    if (snapshot.hasData) {
+                                      var categoryData = snapshot.data!.data;
+                                      return ListView.builder(
+                                        shrinkWrap: true,
+                                        itemCount: categoryData.length,
+                                        physics: const BouncingScrollPhysics(),
+                                        itemExtent: 150,
+                                        scrollDirection: Axis.horizontal,
+                                        itemBuilder: (context, index) {
+                                          return Column(
+                                            mainAxisSize: MainAxisSize.max,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              GestureDetector(
+                                                onTap: () {
+                                                  // setState(() {
+                                                  //   widget.current = index;
+                                                  // });
+                                                },
+                                                child: AnimatedContainer(
+                                                  duration: const Duration(
+                                                      milliseconds: 300),
+                                                  margin:
+                                                      const EdgeInsets.all(5),
+                                                  width: 200,
+                                                  height: 70,
+                                                  decoration: BoxDecoration(
+                                                    // color: widget.current == index
+                                                    //     ? mainGreen
+                                                    //     : Colors.white,
+                                                    color: index == 0
+                                                        ? darkMainColor
+                                                        : gray,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            20),
+                                                  ),
+                                                  alignment:
+                                                      const AlignmentDirectional(
+                                                          0, 0),
+                                                  child: Text(
+                                                    categoryData[index].name,
+                                                    style: const TextStyle(
+                                                      // color: widget.current == index
+                                                      //     ? Colors.white
+                                                      //     : Colors.black,
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 20,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    } else {
+                                      return const SizedBox.shrink();
+                                    }
+                                  case ConnectionState.active:
+                                    if (snapshot.hasData) {
+                                      var categoryData = snapshot.data!.data;
+                                      return ListView.builder(
+                                        shrinkWrap: true,
+                                        itemCount: categoryData.length,
+                                        physics: const BouncingScrollPhysics(),
+                                        itemExtent: 150,
+                                        scrollDirection: Axis.horizontal,
+                                        itemBuilder: (context, index) {
+                                          return Column(
+                                            mainAxisSize: MainAxisSize.max,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              GestureDetector(
+                                                onTap: () {
+                                                  // setState(() {
+                                                  //   widget.current = index;
+                                                  // });
+                                                },
+                                                child: AnimatedContainer(
+                                                  duration: const Duration(
+                                                      milliseconds: 300),
+                                                  margin:
+                                                      const EdgeInsets.all(5),
+                                                  width: 200,
+                                                  height: 70,
+                                                  decoration: BoxDecoration(
+                                                    // color: widget.current == index
+                                                    //     ? mainGreen
+                                                    //     : Colors.white,
+                                                    color: index == 0
+                                                        ? darkMainColor
+                                                        : gray,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            20),
+                                                  ),
+                                                  alignment:
+                                                      const AlignmentDirectional(
+                                                          0, 0),
+                                                  child: Text(
+                                                    categoryData[index].name,
+                                                    style: const TextStyle(
+                                                      // color: widget.current == index
+                                                      //     ? Colors.white
+                                                      //     : Colors.black,
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 20,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    } else {
+                                      return const SizedBox.shrink();
+                                    }
+                                  case ConnectionState.done:
+                                    if (snapshot.hasError) {
+                                      return const Center(
+                                          child:
+                                              Text("ดูเหมือนมีอะไรผิดปกติ.."));
+                                    } else if (snapshot.hasData) {
+                                      var categoryData = snapshot.data!.data;
+                                      return ListView.builder(
+                                        shrinkWrap: true,
+                                        itemCount: categoryData.length,
+                                        physics: const BouncingScrollPhysics(),
+                                        itemExtent: 150,
+                                        scrollDirection: Axis.horizontal,
+                                        itemBuilder: (context, index) {
+                                          return Column(
+                                            mainAxisSize: MainAxisSize.max,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              GestureDetector(
+                                                onTap: () {
+                                                  // setState(() {
+                                                  //   widget.current = index;
+                                                  // });
+                                                },
+                                                child: AnimatedContainer(
+                                                  duration: const Duration(
+                                                      milliseconds: 300),
+                                                  margin:
+                                                      const EdgeInsets.all(5),
+                                                  width: 200,
+                                                  height: 70,
+                                                  decoration: BoxDecoration(
+                                                    // color: widget.current == index
+                                                    //     ? mainGreen
+                                                    //     : Colors.white,
+                                                    color: index == 0
+                                                        ? darkMainColor
+                                                        : gray,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            20),
+                                                  ),
+                                                  alignment:
+                                                      const AlignmentDirectional(
+                                                          0, 0),
+                                                  child: Text(
+                                                    categoryData[index].name,
+                                                    style: const TextStyle(
+                                                      // color: widget.current == index
+                                                      //     ? Colors.white
+                                                      //     : Colors.black,
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 20,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    } else {
+                                      return const SizedBox.shrink();
+                                    }
+                                }
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  : const Expanded(
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'ร้านปิด',
+                              style: TextStyle(
+                                fontSize: 50,
+                                fontWeight: FontWeight.bold,
+                                color: darkGray,
+                              ),
+                            ),
+                            Text(
+                              'เมื่อต้องการเปิดร้าน กรุณากดปุ่มเปิดร้านตรงขวาบน',
+                              style: TextStyle(
+                                fontSize: 25,
+                                color: darkGray,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ),
             ],
           ),
         ),
@@ -360,14 +400,131 @@ class _MenuPageState extends State<MenuPage> {
             padding: const EdgeInsets.all(20.0),
             child: Column(
               children: [
+                // open/close shop button
+                SizedBox(
+                  width: double.infinity,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      color: isOpenShop ? Colors.grey : Colors.green,
+                    ),
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                          elevation: MaterialStateProperty.all(0),
+                          alignment: Alignment.center,
+                          padding: MaterialStateProperty.all(
+                              const EdgeInsets.only(
+                                  right: 75, left: 75, top: 15, bottom: 15)),
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.transparent),
+                          shape: MaterialStateProperty.all(
+                            RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15)),
+                          )),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            elevation: 1,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15)),
+                            content: Container(
+                              width: MediaQuery.of(context).size.width / 3,
+                              height: MediaQuery.of(context).size.height / 4,
+                              decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(15.0),
+                                  boxShadow: [
+                                    BoxShadow(
+                                        offset: const Offset(12, 26),
+                                        blurRadius: 50,
+                                        spreadRadius: 0,
+                                        color: Colors.grey.withOpacity(.1)),
+                                  ]),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  CircleAvatar(
+                                      backgroundColor: Colors.green,
+                                      radius: 25,
+                                      child: Icon(
+                                        Icons.question_mark_sharp,
+                                        color: Colors.white,
+                                      )),
+                                  const SizedBox(
+                                    height: 15,
+                                  ),
+                                  const Text("คุณต้องการเปิดร้านหรือไม่?",
+                                      style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold,
+                                          height: 1)),
+                                  const SizedBox(
+                                    height: 3.5,
+                                  ),
+                                  const Text(
+                                      "เมื่อเปิดร้าน ระบบออเดอร์ไอดีจะสร้างขึ้นมา",
+                                      style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w300,
+                                          height: 1)),
+                                  const SizedBox(
+                                    height: 15,
+                                  ),
+                                  Expanded(
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        SimpleBtn1(
+                                            text: "เปิดร้านเลย",
+                                            onPressed: () {
+                                              setState(() {
+                                                isOpenShop = !isOpenShop;
+                                                genOrderId =
+                                                    "${DateTime.now().day}${DateTime.now().month}${DateTime.now().year}001";
+                                              });
+                                              Get.back();
+                                            }),
+                                        SimpleBtn1(
+                                          text: "ไม่ล่ะ",
+                                          onPressed: () {
+                                            Get.back();
+                                          },
+                                          invertedColors: true,
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        isOpenShop ? "ปิดร้าน" : "เปิดร้าน",
+                        style: const TextStyle(
+                          color: Color(0xffffffff),
+                          fontSize: 20,
+                          height: 1,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
                 // order number tag
-                const Align(
+                Align(
                   alignment: Alignment.centerLeft,
                   child: Padding(
-                    padding: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                    padding: const EdgeInsets.fromLTRB(0, 20, 0, 10),
                     child: Text(
-                      "ORDER #",
-                      style: TextStyle(
+                      "ORDER #${isOpenShop ? "${DateTime.now().day}${DateTime.now().month}${DateTime.now().year}001" : ""}",
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 30,
                       ),
@@ -581,12 +738,13 @@ class _MenuPageState extends State<MenuPage> {
                                           //     "______________________________");
                                           // print(selectedItems);
 
-                                          addOrder("waiting", _totalPrice)
+                                          addOrder("waiting", _totalPrice,
+                                                  genOrderId!)
                                               .then((value) {
                                             if (value == true) {
                                               Get.snackbar(
                                                 "เรียบร้อย!",
-                                                "ออเดอร์คิวที่ #0001 เรียบร้อย รายการดังนี้ : ${selectedItems.join(", ")}",
+                                                "ออเดอร์คิวที่ #$genOrderId เรียบร้อย รายการดังนี้ : ${selectedItems.join(", ")}",
                                                 backgroundColor:
                                                     Colors.green[50],
                                                 colorText: Colors.black,
@@ -617,14 +775,9 @@ class _MenuPageState extends State<MenuPage> {
                                         ),
                                       ),
                                       GestureDetector(
-                                        onTap: () {
-                                          // Get.to(
-                                          //   () => SubOrderPage(
-                                          //     orderId:
-                                          //         orderData[reverseIndex].id,
-                                          //   ),
-                                          // );
-                                        },
+                                        // onTap: () {
+                                        // },
+                                        onTap: null,
                                         child: Container(
                                           height: 60,
                                           width: 120,
@@ -851,6 +1004,44 @@ class _MenuPageState extends State<MenuPage> {
         );
       },
       padding: const EdgeInsets.all(20),
+    );
+  }
+}
+
+class SimpleBtn1 extends StatelessWidget {
+  final String text;
+  final Function() onPressed;
+  final bool invertedColors;
+  const SimpleBtn1(
+      {required this.text,
+      required this.onPressed,
+      this.invertedColors = false,
+      Key? key})
+      : super(key: key);
+  final primaryColor = Colors.green;
+  final accentColor = const Color(0xffffffff);
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      style: ButtonStyle(
+          elevation: MaterialStateProperty.all(0),
+          alignment: Alignment.center,
+          side: MaterialStateProperty.all(
+              BorderSide(width: 1, color: primaryColor)),
+          padding: MaterialStateProperty.all(
+              const EdgeInsets.only(right: 25, left: 25, top: 0, bottom: 0)),
+          backgroundColor: MaterialStateProperty.all(
+              invertedColors ? accentColor : primaryColor),
+          shape: MaterialStateProperty.all(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          )),
+      onPressed: onPressed,
+      child: Text(
+        text,
+        style: TextStyle(
+            color: invertedColors ? primaryColor : accentColor, fontSize: 16),
+      ),
     );
   }
 }

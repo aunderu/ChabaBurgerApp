@@ -1,18 +1,30 @@
-import 'package:chaba_burger_app/models/order/order_detail_model.dart';
-import 'package:chaba_burger_app/models/remote_service.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
 
+import '../../../models/order/order_model.dart';
 import '../../../utils/color.dart';
+import '../../screen_page.dart';
 
 class SubOrderPage extends StatefulWidget {
   const SubOrderPage({
     super.key,
     required this.orderId,
+    required this.orderItems,
+    required this.orderQueue,
+    required this.totalPrice,
+    required this.status,
+    required this.time,
   });
 
   final int orderId;
+  final List<OrderItem> orderItems;
+  final String orderQueue;
+  final String totalPrice;
+  final String status;
+  final DateTime time;
 
   @override
   State<SubOrderPage> createState() => _SubOrderPageState();
@@ -21,98 +33,13 @@ class SubOrderPage extends StatefulWidget {
 class _SubOrderPageState extends State<SubOrderPage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: FutureBuilder<OrderDetailModel?>(
-        future: RemoteService().getOrderDetailModel(widget.orderId.toString()),
-        builder: (context, snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.waiting:
-              return Scaffold(
-                appBar: AppBar(
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  iconTheme: const IconThemeData(
-                    color: darkMainColor,
-                    size: 30,
-                  ),
-                  titleTextStyle: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 25,
-                    color: Colors.black,
-                  ),
-                ),
-                body: const Center(
-                  child: CircularProgressIndicator(),
-                ),
-              );
-            case ConnectionState.active:
-              return Scaffold(
-                appBar: AppBar(
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  iconTheme: const IconThemeData(
-                    color: darkMainColor,
-                    size: 30,
-                  ),
-                  titleTextStyle: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 25,
-                    color: Colors.black,
-                  ),
-                ),
-                body: const Center(
-                  child: CircularProgressIndicator(),
-                ),
-              );
-            case ConnectionState.none:
-              return Scaffold(
-                appBar: AppBar(
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  iconTheme: const IconThemeData(
-                    color: darkMainColor,
-                    size: 30,
-                  ),
-                  titleTextStyle: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 25,
-                    color: Colors.black,
-                  ),
-                ),
-                body: const Center(child: Text('ไม่มีข้อมูลนี้อยู่ในระบบ..')),
-              );
-            case ConnectionState.done:
-              if (snapshot.hasError) {
-                return Scaffold(
-                  appBar: AppBar(
-                    backgroundColor: Colors.transparent,
-                    elevation: 0,
-                    iconTheme: const IconThemeData(
-                      color: darkMainColor,
-                      size: 30,
-                    ),
-                    titleTextStyle: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 25,
-                      color: Colors.black,
-                    ),
-                  ),
-                  body: const Center(
-                    child: Text(
-                        'ดูเหมือนมีบางอย่างผิดปกติ กรุณาลองอีกครั้งในภายหลัง'),
-                  ),
-                );
-              } else if (snapshot.hasData) {
-                var data = snapshot.data!;
-                return OrderDetailScreen(orderDetail: data);
-              } else {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-          }
-        },
-      ),
+    return OrderDetailScreen(
+      orderId: widget.orderId,
+      orderItems: widget.orderItems,
+      orderQueue: widget.orderQueue,
+      totalPrice: widget.totalPrice,
+      status: widget.status,
+      time: widget.time,
     );
   }
 }
@@ -120,10 +47,21 @@ class _SubOrderPageState extends State<SubOrderPage> {
 class OrderDetailScreen extends StatefulWidget {
   const OrderDetailScreen({
     super.key,
-    required this.orderDetail,
+    required this.orderId,
+    required this.orderItems,
+    required this.orderQueue,
+    required this.totalPrice,
+    required this.status,
+    required this.time,
   });
 
-  final OrderDetailModel orderDetail;
+  // final OrderDetailModel orderDetail;
+  final int orderId;
+  final List<OrderItem> orderItems;
+  final String orderQueue;
+  final String totalPrice;
+  final String status;
+  final DateTime time;
 
   @override
   State<OrderDetailScreen> createState() => _OrderDetailScreenState();
@@ -142,7 +80,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           color: darkMainColor,
           size: 30,
         ),
-        title: Text("ORDER #${widget.orderDetail.data.orderQueue}"),
+        title: Text("ORDER #${widget.orderQueue}"),
         titleTextStyle: const TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 25,
@@ -169,7 +107,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   const SizedBox(width: 15),
                   Text(
                     // "${widget.orderDetail.createdAt} น.",
-                    DateFormat.jm().format(widget.orderDetail.data.createdAt),
+                    DateFormat.jm().format(widget.time),
                     style: const TextStyle(
                       color: darkMainColor,
                       fontSize: 20,
@@ -194,27 +132,31 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     width: double.infinity,
                     child: SingleChildScrollView(
                       child: DataTable(
-                        columns: const [
-                          DataColumn(label: Text('รายการ')),
-                          DataColumn(label: Text('จำนวน')),
-                          DataColumn(label: Text('ราคา')),
-                          DataColumn(label: Text('ตัวเลือก')),
+                        columns: [
+                          const DataColumn(label: Text('รายการ')),
+                          const DataColumn(label: Text('จำนวน')),
+                          const DataColumn(label: Text('ราคา')),
+                          widget.status != "paid"
+                              ? const DataColumn(label: Text('ตัวเลือก'))
+                              : const DataColumn(label: Text('')),
                         ],
-                        rows: widget.orderDetail.data.orderItems
+                        rows: widget.orderItems
                             .map(
                               (data) => DataRow(cells: [
                                 DataCell(Text(data.name)),
                                 DataCell(Text(data.quantity)),
                                 DataCell(Text(
                                     data.price == null ? "0" : data.price!)),
-                                DataCell(
-                                  IconButton(
-                                    onPressed: () {},
-                                    icon: const Icon(
-                                        Icons.delete_forever_rounded),
-                                    color: mainRed,
-                                  ),
-                                ),
+                                widget.status != "paid"
+                                    ? DataCell(
+                                        IconButton(
+                                          onPressed: () {},
+                                          icon: const Icon(
+                                              Icons.delete_forever_rounded),
+                                          color: mainRed,
+                                        ),
+                                      )
+                                    : DataCell.empty,
                               ]),
                             )
                             .toList(),
@@ -412,8 +354,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                           Expanded(
                                             flex: 7,
                                             child: ListView.builder(
-                                              itemCount: widget.orderDetail.data
-                                                  .orderItems.length,
+                                              itemCount:
+                                                  widget.orderItems.length,
                                               itemBuilder: (context, index) {
                                                 return Row(
                                                   mainAxisAlignment:
@@ -421,16 +363,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                                           .spaceBetween,
                                                   children: [
                                                     Text(
-                                                      widget
-                                                          .orderDetail
-                                                          .data
-                                                          .orderItems[index]
+                                                      widget.orderItems[index]
                                                           .name,
                                                       style: const TextStyle(
                                                           color: darkGray),
                                                     ),
                                                     Text(
-                                                      "${widget.orderDetail.data.orderItems[index].quantity} x ${widget.orderDetail.data.orderItems[index].price} บาท",
+                                                      "${widget.orderItems[index].quantity} x ${widget.orderItems[index].price} บาท",
                                                       style: const TextStyle(
                                                           color: darkGray),
                                                     ),
@@ -454,7 +393,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                                           color: darkGray),
                                                     ),
                                                     Text(
-                                                      "${widget.orderDetail.data.totalPrice} บาท",
+                                                      "${widget.totalPrice} บาท",
                                                       style: const TextStyle(
                                                           color: darkGray),
                                                     ),
@@ -498,7 +437,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                                   ),
                                                 ),
                                                 Text(
-                                                  "${widget.orderDetail.data.totalPrice} บาท",
+                                                  "${widget.totalPrice} บาท",
                                                   style: const TextStyle(
                                                     fontSize: 20,
                                                   ),
@@ -516,31 +455,38 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             ],
                           ),
                         ),
-                        Expanded(
-                          flex: 2,
-                          child: InkWell(
-                            onTap: () {
-                              if (isQRcode == false) {
-                                showNumberPadDialog(
-                                    context, widget.orderDetail.data);
-                              } else {}
-                            },
-                            borderRadius: BorderRadius.circular(25),
-                            child: Ink(
-                              decoration: BoxDecoration(
-                                color: Colors.green[100],
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                              width: double.infinity,
-                              child: const Center(
-                                child: Text(
-                                  "ชำระเงิน",
-                                  style: TextStyle(fontSize: 25),
+                        widget.status != "paid"
+                            ? Expanded(
+                                flex: 2,
+                                child: InkWell(
+                                  onTap: () {
+                                    if (isQRcode == false) {
+                                      showNumberPadDialog(
+                                          context,
+                                          widget.orderId,
+                                          widget.orderItems,
+                                          widget.orderQueue,
+                                          widget.totalPrice,
+                                          widget.status);
+                                    } else {}
+                                  },
+                                  borderRadius: BorderRadius.circular(25),
+                                  child: Ink(
+                                    decoration: BoxDecoration(
+                                      color: Colors.green[100],
+                                      borderRadius: BorderRadius.circular(25),
+                                    ),
+                                    width: double.infinity,
+                                    child: const Center(
+                                      child: Text(
+                                        "ชำระเงิน",
+                                        style: TextStyle(fontSize: 25),
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                          ),
-                        ),
+                              )
+                            : const SizedBox.shrink(),
                       ],
                     ),
                   ),
@@ -554,19 +500,43 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 }
 
-void showNumberPadDialog(BuildContext context, Data data) {
+void showNumberPadDialog(
+  BuildContext context,
+  int orderId,
+  List<OrderItem> orderItems,
+  String orderQueue,
+  String totalPrice,
+  String status,
+) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
-      return NumberPadDialog(dataOrder: data);
+      return NumberPadDialog(
+        orderId: orderId,
+        orderItems: orderItems,
+        orderQueue: orderQueue,
+        totalPrice: totalPrice,
+        status: status,
+      );
     },
   );
 }
 
 class NumberPadDialog extends StatelessWidget {
-  final Data dataOrder;
+  final int orderId;
+  final List<OrderItem> orderItems;
+  final String orderQueue;
+  final String totalPrice;
+  final String status;
 
-  const NumberPadDialog({super.key, required this.dataOrder});
+  const NumberPadDialog({
+    super.key,
+    required this.orderId,
+    required this.orderItems,
+    required this.orderQueue,
+    required this.totalPrice,
+    required this.status,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -584,7 +554,13 @@ class NumberPadDialog extends StatelessWidget {
           width: MediaQuery.of(context).size.width * 0.5,
           child: Align(
             alignment: Alignment.bottomCenter,
-            child: NumberPadWidget(data: dataOrder),
+            child: NumberPadWidget(
+              orderId: orderId,
+              orderItems: orderItems,
+              orderQueue: orderQueue,
+              totalPrice: totalPrice,
+              status: status,
+            ),
           ),
         ),
         actions: [
@@ -601,9 +577,20 @@ class NumberPadDialog extends StatelessWidget {
 }
 
 class NumberPadWidget extends StatefulWidget {
-  final Data data;
+  final int orderId;
+  final List<OrderItem> orderItems;
+  final String orderQueue;
+  final String totalPrice;
+  final String status;
 
-  const NumberPadWidget({super.key, required this.data});
+  const NumberPadWidget({
+    super.key,
+    required this.orderId,
+    required this.orderItems,
+    required this.orderQueue,
+    required this.totalPrice,
+    required this.status,
+  });
 
   @override
   _NumberPadWidgetState createState() => _NumberPadWidgetState();
@@ -626,6 +613,57 @@ class _NumberPadWidgetState extends State<NumberPadWidget> {
             _myController.text.substring(0, _myController.text.length - 1);
       }
     });
+  }
+
+  Future<bool> editOrder(
+    String status,
+    String orderQueue,
+    String totalPrice,
+    List<OrderItem> orderItems,
+    String orderId,
+  ) async {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return const Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(darkMainColor),
+            strokeWidth: 7,
+          ),
+        );
+      },
+    );
+
+    Map<String, String> headers = {
+      'Content-type': 'multipart/form-data',
+    };
+
+    var request = http.MultipartRequest(
+        'POST', Uri.parse("https://chaba-pos.com/api/order/update/$orderId"))
+      ..headers.addAll(headers)
+      ..fields.addAll({
+        'order_queue': orderQueue,
+        'status': status,
+        'total_price': totalPrice,
+      });
+
+    for (var i = 0; i < orderItems.length; i++) {
+      request.fields.addAll({
+        'name[$i]': orderItems[i].name,
+        'quantity[$i]': orderItems[i].quantity.toString(),
+        'price[$i]': orderItems[i].price.toString(),
+      });
+    }
+
+    var response = await request.send();
+
+    Get.back();
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw false;
+    }
   }
 
   @override
@@ -772,7 +810,7 @@ class _NumberPadWidgetState extends State<NumberPadWidget> {
                       ),
                     ),
                     Text(
-                      "${widget.data.totalPrice} บาท",
+                      "${widget.totalPrice} บาท",
                       style: const TextStyle(
                         fontSize: 20,
                       ),
@@ -791,7 +829,7 @@ class _NumberPadWidgetState extends State<NumberPadWidget> {
                       ),
                     ),
                     Text(
-                      "${int.parse(_myController.text.isEmpty ? "0" : _myController.text) - int.parse(widget.data.totalPrice)} บาท",
+                      "${int.parse(_myController.text.isEmpty ? "0" : _myController.text) - int.parse(widget.totalPrice)} บาท",
                       style: const TextStyle(
                         fontSize: 40,
                       ),
@@ -837,7 +875,22 @@ class _NumberPadWidgetState extends State<NumberPadWidget> {
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(5.0)),
                       child: InkWell(
-                        onTap: () {},
+                        onTap: () {
+                          editOrder(
+                            "paid",
+                            widget.orderQueue,
+                            widget.totalPrice,
+                            widget.orderItems,
+                            widget.orderId.toString(),
+                          ).then((value) {
+                            if (value) {
+                              Get.offAll(() => const ScreenPage());
+                            } else {
+                              Get.snackbar("โอ้ะ?",
+                                  "ดูเหมือนมีอะไรผิดพลาด กรุณาลอกอีกครั้งในภายหลัง");
+                            }
+                          });
+                        },
                         splashColor: Colors.green[700],
                         child: Ink(
                           width: MediaQuery.of(context).size.width * 0.2,

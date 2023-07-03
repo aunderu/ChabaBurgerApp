@@ -232,6 +232,14 @@ class _OrderPageState extends State<OrderPage> {
                               Get.to(
                                 () => SubOrderPage(
                                   orderId: orderData[reverseIndex].id,
+                                  orderItems:
+                                      orderData[reverseIndex].orderItems,
+                                  orderQueue:
+                                      orderData[reverseIndex].orderQueue,
+                                  totalPrice:
+                                      orderData[reverseIndex].totalPrice,
+                                  status: orderData[reverseIndex].status,
+                                  time: orderData[reverseIndex].createdAt,
                                 ),
                                 transition: Transition.cupertino,
                               );
@@ -308,6 +316,14 @@ class _OrderPageState extends State<OrderPage> {
                               Get.to(
                                 () => SubOrderPage(
                                   orderId: orderData[reverseIndex].id,
+                                  orderItems:
+                                      orderData[reverseIndex].orderItems,
+                                  orderQueue:
+                                      orderData[reverseIndex].orderQueue,
+                                  totalPrice:
+                                      orderData[reverseIndex].totalPrice,
+                                  status: orderData[reverseIndex].status,
+                                  time: orderData[reverseIndex].createdAt,
                                 ),
                                 transition: Transition.cupertino,
                               );
@@ -378,6 +394,14 @@ class _OrderPageState extends State<OrderPage> {
                               Get.to(
                                 () => SubOrderPage(
                                   orderId: orderData[reverseIndex].id,
+                                  orderItems:
+                                      orderData[reverseIndex].orderItems,
+                                  orderQueue:
+                                      orderData[reverseIndex].orderQueue,
+                                  totalPrice:
+                                      orderData[reverseIndex].totalPrice,
+                                  status: orderData[reverseIndex].status,
+                                  time: orderData[reverseIndex].createdAt,
                                 ),
                                 transition: Transition.cupertino,
                               );
@@ -442,6 +466,11 @@ class _OrderPageState extends State<OrderPage> {
                         Get.to(
                           () => SubOrderPage(
                             orderId: orderData[reverseIndex].id,
+                            orderItems: orderData[reverseIndex].orderItems,
+                            orderQueue: orderData[reverseIndex].orderQueue,
+                            totalPrice: orderData[reverseIndex].totalPrice,
+                            status: orderData[reverseIndex].status,
+                            time: orderData[reverseIndex].createdAt,
                           ),
                           transition: Transition.cupertino,
                         );
