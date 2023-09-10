@@ -10,11 +10,12 @@ class ReportPage extends StatefulWidget {
 class _ReportPageState extends State<ReportPage> {
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        "หน้ารายงานข้อมูล อยู่ระหว่างการพัฒนา\nขออภัยในความไม่สะดวก",
-        textAlign: TextAlign.center,
-      ),
-    );
+    // return const Center(
+    //   child: Text(
+    //     "หน้ารายงานข้อมูล อยู่ระหว่างการพัฒนา\nขออภัยในความไม่สะดวก",
+    //     textAlign: TextAlign.center,
+    //   ),
+    // );
+    return Container();
   }
 }

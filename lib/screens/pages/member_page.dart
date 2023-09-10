@@ -10,11 +10,12 @@ class MemberPage extends StatefulWidget {
 class _MemberPageState extends State<MemberPage> {
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        "หน้าเมมเบอร์ อยู่ระหว่างการพัฒนา\nขออภัยในความไม่สะดวก",
-        textAlign: TextAlign.center,
-      ),
-    );
+    // return const Center(
+    //   child: Text(
+    //     "หน้าเมมเบอร์ อยู่ระหว่างการพัฒนา\nขออภัยในความไม่สะดวก",
+    //     textAlign: TextAlign.center,
+    //   ),
+    // );
+    return Container();
   }
 }

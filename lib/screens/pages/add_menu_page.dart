@@ -33,13 +33,13 @@ class _AddMenuPageState extends State<AddMenuPage> {
   TextEditingController priceController = TextEditingController();
   TextEditingController salePriceController = TextEditingController();
 
-  @override
-  void dispose() {
-    nameController.dispose();
-    priceController.dispose();
-    salePriceController.dispose();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   nameController.dispose();
+  //   priceController.dispose();
+  //   salePriceController.dispose();
+  //   super.dispose();
+  // }
 
   // Future<void> addMenu(
   //   String category,
@@ -427,29 +427,55 @@ class _AddMenuPageState extends State<AddMenuPage> {
                                       },
                                     ),
                                     const SizedBox(height: 10),
-                                    Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: SizedBox(
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                0.2,
-                                        child: TextFormField(
-                                          controller: salePriceController,
-                                          decoration: const InputDecoration(
-                                            labelText: 'ราคาขาย',
-                                            suffix: Text('บาท'),
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        SizedBox(
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.2,
+                                          child: TextFormField(
+                                            controller: salePriceController,
+                                            decoration: const InputDecoration(
+                                              labelText: 'ราคาขาย',
+                                              suffix: Text('บาท'),
+                                            ),
+                                            keyboardType: TextInputType.number,
+                                            validator: (value) {
+                                              if (value == null ||
+                                                  value.isEmpty) {
+                                                return 'กรุณาใส่ราคาขาย';
+                                              }
+                                              return null;
+                                            },
                                           ),
-
-                                          keyboardType: TextInputType.number,
-                                          validator: (value) {
-                                            if (value == null ||
-                                                value.isEmpty) {
-                                              return 'กรุณาใส่ราคาขาย';
-                                            }
-                                            return null;
-                                          },
                                         ),
-                                      ),
+                                        SizedBox(
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.2,
+                                          child: TextFormField(
+                                            controller: salePriceController,
+                                            decoration: const InputDecoration(
+                                              labelText: 'คะแนนเมมเบอร์',
+                                              suffix: Text('คะแนน'),
+                                            ),
+                                            keyboardType: TextInputType.number,
+                                            validator: (value) {
+                                              if (value == null ||
+                                                  value.isEmpty) {
+                                                return 'กรุณาใส่ราคาขาย';
+                                              }
+                                              return null;
+                                            },
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                     const SizedBox(height: 10),
                                     const Divider(
@@ -597,9 +623,9 @@ class _AddMenuPageState extends State<AddMenuPage> {
                                     //   priceValue,
                                     //   salePriceValue,
                                     // );
-                                    nameController!.clear();
-                                    priceController!.clear();
-                                    salePriceController!.clear();
+                                    nameController.clear();
+                                    priceController.clear();
+                                    salePriceController.clear();
                                     Get.back();
                                   }
                                 },
