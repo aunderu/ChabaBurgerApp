@@ -1,7 +1,6 @@
 import 'package:chaba_burger_app/utils/color.dart';
 import 'package:flutter/material.dart';
 
-import 'auth.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

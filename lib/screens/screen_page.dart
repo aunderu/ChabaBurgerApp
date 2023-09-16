@@ -1,4 +1,3 @@
-import 'package:chaba_burger_app/auth/auth.dart';
 import 'package:flutter/material.dart';
 
 import '../utils/color.dart';
@@ -12,6 +11,8 @@ import 'pages/report_page.dart';
 class ScreenPage extends StatefulWidget {
   const ScreenPage({super.key});
 
+  // final bool isOpen;
+
   @override
   State<ScreenPage> createState() => _ScreenPageState();
 }
@@ -19,16 +20,6 @@ class ScreenPage extends StatefulWidget {
 class _ScreenPageState extends State<ScreenPage> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   TextEditingController? searchController;
-
-  /// Views to display
-  final List<Widget> _screens = const [
-    MenuPage(),
-    OrderPage(),
-    AddMenuPage(),
-    AddCategoryPage(),
-    MemberPage(),
-    ReportPage(),
-  ];
 
   /// The currently selected index of the bar
   int selectedIndex = 0;
@@ -45,6 +36,16 @@ class _ScreenPageState extends State<ScreenPage> {
     searchController?.dispose();
     super.dispose();
   }
+
+  /// Views to display
+  final List<Widget> _screens = [
+    const MenuPage(),
+    const OrderPage(),
+    const AddMenuPage(),
+    const AddCategoryPage(),
+    const MemberPage(),
+    const ReportPage(),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -131,7 +132,7 @@ class _ScreenPageState extends State<ScreenPage> {
           ),
         ),
         actions: [
-          Column(
+          const Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -147,7 +148,7 @@ class _ScreenPageState extends State<ScreenPage> {
               //     : const SizedBox.shrink(),\
               Text(
                 "Aun Suthawee",
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: darkGray,
                   fontSize: 20,
@@ -165,7 +166,7 @@ class _ScreenPageState extends State<ScreenPage> {
               Text(
                 // "${userData.data!['role']} / ${userData.data!['gender']}",
                 "400012 / ยะลา",
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: gray,
                 ),

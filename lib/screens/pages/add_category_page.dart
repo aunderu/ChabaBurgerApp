@@ -3,7 +3,7 @@ import 'package:chaba_burger_app/utils/color.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../models/category/category_model.dart' as categoryModel;
+import '../../models/category/category_model.dart';
 
 class AddCategoryPage extends StatefulWidget {
   const AddCategoryPage({super.key});
@@ -160,7 +160,7 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
           Expanded(
             child: SizedBox(
               width: double.infinity,
-              child: FutureBuilder<categoryModel.CategoryModel?>(
+              child: FutureBuilder<CategoryModel?>(
                 future: RemoteService().getCategoryModel(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {

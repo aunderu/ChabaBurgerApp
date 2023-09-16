@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import '../../models/category/category_model.dart' as categoryModel;
-import '../../models/menu/menu_model.dart' as menuModel;
+import '../../models/category/category_model.dart' as category_model;
+import '../../models/menu/menu_model.dart' as menu_model;
 import '../../models/remote_service.dart';
 import '../../utils/color.dart';
 
@@ -96,7 +96,7 @@ class _AddMenuPageState extends State<AddMenuPage> {
           ),
           Expanded(
             flex: 8,
-            child: FutureBuilder<menuModel.MenuModel?>(
+            child: FutureBuilder<menu_model.MenuModel?>(
               future: RemoteService().getMenuModel(),
               builder: (context, snapshot) {
                 switch (snapshot.connectionState) {
@@ -155,7 +155,7 @@ class _AddMenuPageState extends State<AddMenuPage> {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: FutureBuilder<categoryModel.CategoryModel?>(
+                  child: FutureBuilder<category_model.CategoryModel?>(
                     future: RemoteService().getCategoryModel(),
                     builder: (context, snapshot) {
                       switch (snapshot.connectionState) {
@@ -350,7 +350,7 @@ class _AddMenuPageState extends State<AddMenuPage> {
     );
   }
 
-  Widget menuItemWidget(List<menuModel.Datum> data) {
+  Widget menuItemWidget(List<menu_model.Datum> data) {
     return GridView.builder(
       itemCount: data.length + 1,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -613,9 +613,9 @@ class _AddMenuPageState extends State<AddMenuPage> {
                                     if (selectedItem == null) {}
 
                                     int priceValue =
-                                        int.parse(priceController!.text);
+                                        int.parse(priceController.text);
                                     int salePriceValue =
-                                        int.parse(salePriceController!.text);
+                                        int.parse(salePriceController.text);
                                     // addMenu(
                                     //   selectedItem!,
                                     //   nameController!.text,
@@ -676,7 +676,7 @@ class _AddMenuPageState extends State<AddMenuPage> {
           onTap: () {},
           child: Container(
             decoration: BoxDecoration(
-              image: DecorationImage(
+              image: const DecorationImage(
                 image: NetworkImage(
                   // menuData[index - 1].img,
                   "https://chaba-pos.com/storage/menu_image/Thai%20Stlye_20230612212830.jpg",

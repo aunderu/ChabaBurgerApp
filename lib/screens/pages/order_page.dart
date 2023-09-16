@@ -121,7 +121,7 @@ class _OrderPageState extends State<OrderPage> {
               return const Center(child: CircularProgressIndicator());
             default:
               if (snapshot.hasError) {
-                return Text('กรุณารอสักครู่..');
+                return const Text('กรุณารอสักครู่..');
               } else {
                 var orderData = snapshot.data!.data;
                 // print(orderData[2].orderItems);

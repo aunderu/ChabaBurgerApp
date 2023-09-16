@@ -593,12 +593,12 @@ class NumberPadWidget extends StatefulWidget {
   });
 
   @override
-  _NumberPadWidgetState createState() => _NumberPadWidgetState();
+  State<NumberPadWidget> createState() => _NumberPadWidgetState();
 }
 
 class _NumberPadWidgetState extends State<NumberPadWidget> {
   final TextEditingController _myController = TextEditingController();
-  PageController _pageController = PageController(initialPage: 0);
+  final PageController _pageController = PageController(initialPage: 0);
 
   void _addDigit(int digit) {
     setState(() {

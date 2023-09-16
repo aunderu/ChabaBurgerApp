@@ -8,14 +8,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../models/menu/menu_model.dart' as menuModel;
+import '../../models/menu/menu_model.dart' as menu_model;
 import '../../models/menu/menu_select_item.dart';
-import '../screen_page.dart';
-import 'sub_page/sub_order_page.dart';
 
 class MenuPage extends StatefulWidget {
   const MenuPage({super.key});
+
+  // final bool isOpen;
 
   @override
   State<MenuPage> createState() => _MenuPageState();
@@ -24,12 +25,28 @@ class MenuPage extends StatefulWidget {
 class _MenuPageState extends State<MenuPage> {
   List<MenuSelectItem> selectedItems = [];
   int _totalPrice = 0;
-  bool isOpenShop = false;
+  bool isShopOpen = false;
   String? genOrderId;
 
   @override
   void initState() {
     super.initState();
+    _loadData();
+  }
+
+  void _loadData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    bool? isOpen = prefs.getBool("isShopOpen");
+
+    isOpen != null ? isShopOpen = isOpen : isShopOpen = false;
+
+  }
+
+  void _saveData(bool isOpen) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    await prefs.setBool('isShopOpen', isOpen);
   }
 
   Future<bool> addOrder(String status, int totalPrice, String orderId) async {
@@ -87,10 +104,10 @@ class _MenuPageState extends State<MenuPage> {
           child: Column(
             children: [
               // menu
-              isOpenShop
+              isShopOpen == true
                   ? Expanded(
                       flex: 8,
-                      child: FutureBuilder<menuModel.MenuModel?>(
+                      child: FutureBuilder<menu_model.MenuModel?>(
                         future: RemoteService().getMenuModel(),
                         builder: (context, snapshot) {
                           switch (snapshot.connectionState) {
@@ -139,7 +156,7 @@ class _MenuPageState extends State<MenuPage> {
                   : const SizedBox.shrink(),
 
               // category of menu
-              isOpenShop
+              isShopOpen == true
                   ? Expanded(
                       flex: 2,
                       child: Padding(
@@ -406,7 +423,7 @@ class _MenuPageState extends State<MenuPage> {
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(15),
-                      color: isOpenShop ? Colors.grey : Colors.green,
+                      color: isShopOpen ? Colors.grey : Colors.green,
                     ),
                     child: ElevatedButton(
                       style: ButtonStyle(
@@ -444,7 +461,7 @@ class _MenuPageState extends State<MenuPage> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  CircleAvatar(
+                                  const CircleAvatar(
                                       backgroundColor: Colors.green,
                                       radius: 25,
                                       child: Icon(
@@ -480,12 +497,15 @@ class _MenuPageState extends State<MenuPage> {
                                       children: [
                                         SimpleBtn1(
                                             text: "เปิดร้านเลย",
-                                            onPressed: () {
+                                            onPressed: () async {
                                               setState(() {
-                                                isOpenShop = !isOpenShop;
+                                                isShopOpen = !isShopOpen;
                                                 genOrderId =
                                                     "${DateTime.now().day}${DateTime.now().month}${DateTime.now().year}001";
+
+                                                _saveData(isShopOpen);
                                               });
+
                                               Get.back();
                                             }),
                                         SimpleBtn1(
@@ -505,7 +525,7 @@ class _MenuPageState extends State<MenuPage> {
                         );
                       },
                       child: Text(
-                        isOpenShop ? "ปิดร้าน" : "เปิดร้าน",
+                        isShopOpen ? "ปิดร้าน" : "เปิดร้าน",
                         style: const TextStyle(
                           color: Color(0xffffffff),
                           fontSize: 20,
@@ -523,7 +543,7 @@ class _MenuPageState extends State<MenuPage> {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(0, 20, 0, 10),
                     child: Text(
-                      "ORDER #${isOpenShop ? "${DateTime.now().day}${DateTime.now().month}${DateTime.now().year}001" : ""}",
+                      "ORDER #${isShopOpen ? "${DateTime.now().day}${DateTime.now().month}${DateTime.now().year}001" : ""}",
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 30,
@@ -815,7 +835,7 @@ class _MenuPageState extends State<MenuPage> {
     );
   }
 
-  Widget menuItemWidget(List<menuModel.Datum> data) {
+  Widget menuItemWidget(List<menu_model.Datum> data) {
     return GridView.builder(
       itemCount: 2,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -1040,7 +1060,9 @@ class SimpleBtn1 extends StatelessWidget {
       child: Text(
         text,
         style: TextStyle(
-            color: invertedColors ? primaryColor : accentColor, fontSize: 16),
+          color: invertedColors ? primaryColor : accentColor,
+          fontSize: 16,
+        ),
       ),
     );
   }

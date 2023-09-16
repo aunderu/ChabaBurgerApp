@@ -1,8 +1,7 @@
-import 'package:chaba_burger_app/auth/auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../screens/screen_page.dart';
-import 'login_page.dart';
 
 class WidgetTree extends StatefulWidget {
   const WidgetTree({super.key});
@@ -12,6 +11,24 @@ class WidgetTree extends StatefulWidget {
 }
 
 class _WidgetTreeState extends State<WidgetTree> {
+  bool isShopOpen = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  void _loadData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    bool? isOpen = prefs.getBool("isShopOpen");
+
+    isOpen != null ? isShopOpen = isOpen : isShopOpen = false;
+
+    await prefs.setBool('isShopOpen', isShopOpen);
+  }
+
   @override
   Widget build(BuildContext context) {
     // return StreamBuilder(
@@ -24,6 +41,6 @@ class _WidgetTreeState extends State<WidgetTree> {
     //     }
     //   },
     // );
-    return ScreenPage();
+    return const ScreenPage();
   }
 }
